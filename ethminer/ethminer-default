@@ -1,0 +1,34 @@
+# User settings - Here you can enable/disable a given miner profile:
+
+#
+DAEMON="/opt/ethminer/bin/ethminer"
+LOGFILE="/var/log/miners/ethminer.log"
+
+WALLET="0812f4b6de7356e209f092dd1ec865d5d9b5e2f6"
+RUNAS="th0ma7"
+WORKER="th0ma7-miner-01"
+
+# -U (nVidia Cuda) or -G (OpenCL) or -X (mixed Cuda/OpenCL cards)
+GPU="-G"
+# values: pool, proxy, solo
+MINING_MODE="pool"
+# ETHMINING - ETH
+SERVERS="us1.ethermine.org"
+FSERVERS="us2.ethermine.org"
+TCPPORT="4444"
+SSLPORT="5555"
+FARM_RECHECK="2000"
+
+# <= 0.13
+STRATUMCLIENT="1"
+STRATUMPROTO="0"
+
+# >= 0.14
+# stratum+ssl stratum+tcp stratum+tls stratum+tls12 stratum1+ssl stratum1+tcp stratum1+tls stratum1+tls12 stratum2+ssl stratum2+tcp stratum2+tls stratum2+tls12
+#STRATUMURL="stratum+tcp"
+STRATUMURL="stratum+ssl"
+# The current stable OpenCL kernel only supports exactly 8 threads. Thread parameter will be ignored.
+#CLPARALLELHASH="8"   # 0.14: 68.06 Mh/s
+#CLPARALLELHASH="4"   # 0.14: 67.12 Mh/s
+CLPARALLELHASH="2"   # 0.14: 72.99 Mh/s
+#CLPARALLELHASH="1"   # 0.14: 43.52 Mh/s
