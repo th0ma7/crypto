@@ -2,7 +2,7 @@
 Various derived &amp; home-made shell scripts for OpenWRT &amp; Mining
 
 # Mining scripts preamble
-Scripts are expected to be run within a dedicated user account (e.g. not root).
+Scripts are expected to be run within a dedicated user account (e.g. not `root`).
 
 I recommend doing the following to ensure your user account as sufficient priviledges.
 
@@ -40,11 +40,11 @@ Simple startup script for various releases for ethminer:
 * https://github.com/ethereum-mining/ethminer/releases
 
 Place the files as follow:
-[x] ethminer-init.d      -> `/etc/init.d/ethminer`
-[x] ethminer-default     -> `/etc/default/ethminer`
-[x] ethminer-logrotate.d -> `/etc/logrotate.d/ethminer`
+- ethminer-init.d      -> `/etc/init.d/ethminer`
+- ethminer-default     -> `/etc/default/ethminer`
+- ethminer-logrotate.d -> `/etc/logrotate.d/ethminer`
 
-Adjust your WALLET in /etc/default/ethminer
+Adjust your `WALLET` in `/etc/default/ethminer`
 
 Reload systemd and start the service:
 ```
@@ -60,9 +60,9 @@ Simple script to monitor the GPU of your mining rig and restart or reboot if a G
 Currently only works with the conjunction of AMD video cards & ethereum
 
 Place the files as follow:
-[x] gpuwatch.bash        -> `/usr/local/bin/gpuwatch.bash`
-[x] gpuwatch-cron.d      -> `/etc/cron.d/gpuwatch`
-[x] gpuwatch-logrotate.d -> `/etc/logrotate.d/gpuwatch`
+- gpuwatch.bash        -> `/usr/local/bin/gpuwatch.bash`
+- gpuwatch-cron.d      -> `/etc/cron.d/gpuwatch`
+- gpuwatch-logrotate.d -> `/etc/logrotate.d/gpuwatch`
 
 Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
 
