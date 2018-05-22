@@ -25,7 +25,8 @@ export GPU_SINGLE_ALLOC_PERCENT=100
 DAEMON="/opt/ethminer/bin/ethminer"
 LOGFILE="/var/log/miners/ethminer.log"
 #
-WALLET="0812f4b6de7356e209f092dd1ec865d5d9b5e2f6"
+#WALLET="0812f4b6de7356e209f092dd1ec865d5d9b5e2f6"
+WALLET="522d164549E68681dfaC850A2cabdb95686C1fEC"
 RUNAS="th0ma7"
 WORKER="th0ma7-miner-01"
 #
