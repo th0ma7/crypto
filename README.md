@@ -38,6 +38,8 @@ dr-xr-x--- 30 root video 0 fév 18 21:45 /sys/kernel/debug
 # ethminer
 Simple startup script for various releases for ethminer:
 * https://github.com/ethereum-mining/ethminer/releases
+Loosely influenced by:
+* https://gist.github.com/bmatthewshea/9a062c092fd673318f8d208ce44f4f51
 
 Place the files as follow:
 - ethminer-init.d      -> `/etc/init.d/ethminer`
@@ -68,3 +70,16 @@ Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
 
 Log files are located here: `/var/log/miners/gpuwatch.log`
 Make sure the log directory is read/write from the user account you use.
+
+TODO:
+- Document how to install & setup mutt for email relaying
+
+# tmux
+Simple console output script allowing to monitor your system status & hashrate in realtime.
+
+Place the files as follow:
+- tmux.bash        -> `/usr/local/bin/tmux.bash`
+
+TODO:
+- Dynamic calculation of tmux screens depending of number of GPU detected
+- Further document howto setup systemd
