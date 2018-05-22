@@ -2,8 +2,7 @@
 Various derived &amp; home-made shell scripts for OpenWRT &amp; Mining
 
 # Mining scripts preamble
-Scripts are expected to be run within a dedicated user account (e.g. not `root`).
-
+Scripts are expected to be run within a dedicated user account (e.g. not `root`).<br/>
 I recommend doing the following to ensure your user account as sufficient priviledges.
 
 a) Add the user to the adm & video groups
@@ -37,7 +36,7 @@ dr-xr-x--- 30 root video 0 fév 18 21:45 /sys/kernel/debug
 
 # ethminer
 Simple startup script for various releases for ethminer:
-* https://github.com/ethereum-mining/ethminer/releases
+* https://github.com/ethereum-mining/ethminer/releases  
 Loosely influenced by:
 * https://gist.github.com/bmatthewshea/9a062c092fd673318f8d208ce44f4f51
 
@@ -54,11 +53,11 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart ethminer
 ```
 
-Log files are located under `/var/log/miners/ethminer.log`
+Log files are located under `/var/log/miners/ethminer.log`<br/>
 Make sure the log directory is read/write from the user account you use.
 
 # gpuwatch
-Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.
+Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.<br/>
 Currently only works with the conjunction of AMD video cards & ethereum
 
 Place the files as follow:
@@ -68,7 +67,7 @@ Place the files as follow:
 
 Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
 
-Log files are located here: `/var/log/miners/gpuwatch.log`
+Log files are located here: `/var/log/miners/gpuwatch.log`<br/>
 Make sure the log directory is read/write from the user account you use.
 
 TODO:
