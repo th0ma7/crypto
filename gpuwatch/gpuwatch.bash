@@ -1,5 +1,23 @@
 #!/bin/bash
 
+########################################################
+#
+# gpuwatch.bash
+#
+# Écrit par: th0ma7@gmail.com
+#
+# Description:
+#   Capture de l'état des GPU AMD sur le sytème
+#   et engendre un redémarrage du service ethminer
+#   ou un redémarrage du serveur en fonction du
+#   nombre d'erreurs rencontrées.
+#
+#   Permet de prendre en charge les cas ou le service
+#   tombe en panne ainsi que les cas ou des GPU
+#   tombe en état zombie.
+#
+########################################################
+
 declare EMAIL=th0ma7@gmail.com
 declare GPUWATCH_STATUS=$HOME/.gpuwatch              # Fichier d'état avec le nombre de redémarrage du service
 declare HS110IP=192.168.80.6                         # Adresse IP de la prise électrique réseau
@@ -18,12 +36,25 @@ declare PROBE_MAX=3                                  # Nombre de fois que l'on v
 declare HWMON="FALSE"
 declare DEBUG="FALSE"
 #
+declare -i UPTIME=0
 declare -i RESTART=0
 declare -i REBOOT=0
 declare LAST_RESTART=""
 declare LAST_REBOOT=""
 declare LAST_FAILED_GPU=""
 
+#
+# GetUptime()
+#
+# Entrée: null
+# Sortie: Nombre de minutes d'activité depuis la dernière amorce du système
+GetUptime() {
+   uptime | awk -F'( |,|:)+' '{if ($7=="min") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d*24*60+h*60+m+0}'
+}
+
+#
+# GetServiceStatus()
+#
 # Entrée: null
 # Sortie: État du service on|off|<defunct>|<failed>|<unknown>
 ##
@@ -70,8 +101,12 @@ GetServiceStatus() {
    fi
 }
 
+#
+# GetGPULoad()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: charge en % de la carte vidéo
+#
 GetGPULoad() {
    local id=$1
    local load[0]=""
@@ -95,8 +130,12 @@ GetGPULoad() {
    echo "${load[*]}"
 }
 
+#
+# GetGPUTemp()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: température en C de la carte vidéo
+#
 GetGPUTemp() {
    local id=$1
    local temp=""
@@ -108,7 +147,9 @@ GetGPUTemp() {
    echo "$temp"
 }
 
-
+#
+# GetGPUMhs()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: température en C de la carte vidéo
 # Variable Globale: $SERVICE_LOG
@@ -121,9 +162,9 @@ GetGPUMhs() {
    [ "$mhs" ] && echo "$mhs" || echo "0.00"
 }
 
-
-
-
+#
+# GetGPUWatt()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: Watt MAX de la carte vidéo
 GetGPUWatt() {
@@ -134,7 +175,9 @@ GetGPUWatt() {
    echo "$watt"
 }
 
-
+#
+# ProbeGPU()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: État de la cartes vidéo tel que:
 #             normal: gpu/0[13.33Mh/s:100%:74C:OK]
@@ -153,30 +196,36 @@ ProbeGPU() {
    gpu_mhs=`GetGPUMhs $id`
    
    # Obtenir la valeur de température uniquement avec -HWMON
-   [ "$HWMON" = "TRUE" ] && gpu_temp=":"`GetGPUTemp $id`"C"
+   #
+   # Note: Intègre un espace " " afin d'afficher -vide- sans
+   #       espace lorsque -HWMON n'est pas passé en paramètre
+   [ "$HWMON" = "TRUE" ] && gpu_temp=" "`GetGPUTemp $id`"C"
    # Obtenir la valeur de consommation en watt uniquement avec -HWMON
-   [ "$HWMON" = "TRUE" ] && gpu_watt=":"`GetGPUWatt $id`"W"
+   [ "$HWMON" = "TRUE" ] && gpu_watt=" "`GetGPUWatt $id`"W"
    
 
    # Si la charge GPU est 0 absolu (0,0,0) mais que l'on a tout de meme un Mh/s > 0
    # ou si la charge est à 100% mais avec un Mh/s = 0
    if [ "$gpu_load" = "0,0,0" -a ! $gpu_mhs = "0.00" ]; then
-      echo " gpu/$id[${gpu_mhs}Mh/s:0%${gpu_temp}${gpu_watt}:ERROR]"
+      echo " gpu/$id[${gpu_mhs}Mh/s 0% ${gpu_temp} ${gpu_watt}:ERROR]"
    elif [ "$gpu_load" = "100" -a $gpu_mhs = "0.00" ]; then
-      echo " gpu/$id[0.00Mh/s:${gpu_load}%${gpu_temp}${gpu_watt}:ERROR]"
+      echo " gpu/$id[0.00Mh/s ${gpu_load}% ${gpu_temp} ${gpu_watt}:ERROR]"
          
    # Le système est forcément en maintenance
    # ET/OU les journaux ont tourné donc on a pas
    # d'état Mh/s valide
    elif [ "$gpu_load" = "0,0,0" -a $gpu_mhs = "0.00" ]; then
-      echo "gpu/$id[${gpu_mhs}Mh/s:0%${gpu_temp}${gpu_watt}]"
+      echo "gpu/$id[${gpu_mhs}Mh/s 0%${gpu_temp}${gpu_watt}]"
    else
-      echo "gpu/$id[${gpu_mhs}Mh/s:${gpu_load}%${gpu_temp}${gpu_watt}]"
+      echo "gpu/$id[${gpu_mhs}Mh/s ${gpu_load}%${gpu_temp}${gpu_watt}]"
    fi
 }
 
+#
+# ProbeAllGPU()
+#
 # Entrée: null
-# Sortie: État de l'ensemble des GPU tel que: [gpu/0[13.37Mh/s,100%:74C:OK] gpu/1[13.81Mh/s,100%:63C:OK] gpu/2[13.3....
+# Sortie: État de l'ensemble des GPU tel que: [gpu/0[13.37Mh/s 100% 74C OK] gpu/1[13.81Mh/s 100% 63C OK] gpu/2[13.3....
 # Description: Fait appel à ProbeGPU pour chaque répertoire /sys/kernel/debug/dri/[0-9]/ existant
 # Sous-Fonctions: ProbeGPU
 ProbeAllGPU() {
@@ -212,13 +261,17 @@ ProbeAllGPU() {
    echo ${gpu_status[*]}
 }
 
-
+#
+# GetTotalPowerUsage()
+#
 GetTotalPowerUsage() {
    out=`$HS110 $HS110IP 9999 emeter 2>/dev/null | jq -r '.emeter.get_realtime.power' | cut -f1 -d.`
    echo $out"W"
 }
 
-
+#
+# GetHardwareInfo()
+#
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
 # Sortie: information détaillée de la carte vidéo
 GetHardwareInfo() {
@@ -228,10 +281,40 @@ GetHardwareInfo() {
    [ -x $ROCMSMI ] && sudo $ROCMSMI -d $id -a
 }
 
+#
+# MailAlert()
+#
+# Entrée: Le message d'alerte à concatenner à l'objet du courriel ($1)
+# Sortie: Aucune
+# Description:
+#   Utilise la variable globale $EMAIL_BODY pointant vers le fichier
+#   temporaire contenant le corps du message courriel.  Transmet le
+#   courriel via mutt avec l'aide des variables globales
+#      $HOSTNAME: Nom du système actuel
+#    $FAILED_GPU: Liste de GPU en défaut
+#         $EMAIL: Courriel destination
+#
 MailAlert() {
-   (cat $EMAIL_BODY) | mutt -s "$HOSTNAME GPU Alert ($FAILED_GPU) - $1" $EMAIL
+   local alert_msg=$1
+
+   (cat $EMAIL_BODY) | mutt -s "$HOSTNAME GPU Alert ($FAILED_GPU) - $alert_msg" $EMAIL
 }
 
+#
+# SystemReboot()
+#
+# Entrée: Aucune
+# Sortie: Aucune
+# Description: 
+#    1) Envoie un courriel en prévision du redémarrage (via MailAlert)
+#   2a) Réinitialise le nombre de redémarrage du services à 0 ($RESTART)
+#   2b) Incrémente le nombre de redémarrage système de 1 ($REBOOT)
+#   2c) Capture la date acutelle du redémarrage système ($LAST_REBOOT)
+#   2d) Capture la liste des GPU en défaut ($LAST_FAILED_GPU)
+#   2e) Inscrit les valeurs dans le fichier d'état via WriteStatus
+#    3) Efface les fichiers temporaires afin de ne rien laisser trainer
+#    4) Redémarrage du système
+#
 SystemReboot() {
    MailAlert "REBOOT #$REBOOT - $(GetServiceStatus) - $(GetTotalPowerUsage)"
 
@@ -248,6 +331,19 @@ SystemReboot() {
    [ ! "$DEBUG" = "TRUE" ] && sudo reboot
 }
 
+#
+# ServiceRestart()
+#
+# Entrée: Aucune
+# Sortie: Aucune
+# Description: 
+#    1) Redémarre le service
+#   2a) Incrémente le nombre de redémarrage du service de 1 ($RESTART)
+#   2c) Capture la date acutelle du redémarrage du service ($LAST_RESTART)
+#   2d) Capture la liste des GPU en défaut ($LAST_FAILED_GPU)
+#   2e) Inscrit les valeurs dans le fichier d'état via WriteStatus
+#    3) Envoie un courriel en prévision de redémarrage service (via MailAlert)
+# 
 ServiceRestart() {
    local status=""
 
@@ -261,6 +357,16 @@ ServiceRestart() {
    MailAlert "Service Restart #$RESTART"
 }
 
+#
+# WriteStatus()
+#
+# Entrée: Aucune
+# Sortie: Aucune
+# Description: 
+#    1) Réinitialise le fichier d'état $GPUWATCH_STATUS et y inscrit la valeur de:
+#         $RESTART, $REBOOT, $LAST_RESTART, $LAST_REBOOT, $LAST_FAILED_GPU
+#    2) Si mode déverminage alors affin l'état à l'écran sur interface d'erreur
+# 
 WriteStatus() {
    echo "RESTART=$RESTART"                     >  $GPUWATCH_STATUS
    echo "REBOOT=$REBOOT"                       >> $GPUWATCH_STATUS
@@ -270,11 +376,11 @@ WriteStatus() {
    
    #DEBUG
    if [ "$DEBUG" = "TRUE" ]; then
-      echo "RESTART=$RESTART"
-      echo "REBOOT=$REBOOT"
-      echo "LAST_RESTART=$LAST_RESTART"
-      echo "LAST_REBOOT=$LAST_REBOOT"
-      echo "LAST_FAILED_GPU=\"$LAST_FAILED_GPU\""
+      echo "RESTART=$RESTART"                     1>&2
+      echo "REBOOT=$REBOOT"                       1>&2
+      echo "LAST_RESTART=$LAST_RESTART"           1>&2
+      echo "LAST_REBOOT=$LAST_REBOOT"             1>&2
+      echo "LAST_FAILED_GPU=\"$LAST_FAILED_GPU\"" 1>&2
    fi
 }
 
@@ -322,15 +428,18 @@ HOSTNAME=`hostname --short`
 [ `ls -1 /sys/kernel/debug 1>/dev/null 2>&1` ] \
     || sudo mount -t debugfs -o remount,gid=44,mode=550 none /sys/kernel/debug/
 
+# Récupérer l'état des carte vidéo
+GPUSTATUS=$(ProbeAllGPU)
+
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 [ "$HWMON" = "TRUE" ] \
-   && echo -ne "GPUWatch ($HOSTNAME,$DATE,$(GetServiceStatus),$(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
-   || echo -ne "GPUWatch ($HOSTNAME,$DATE,$(GetServiceStatus)): " | tee -a $EMAIL_BODY
-echo    >> $EMAIL_BODY
-echo    >> $EMAIL_BODY
+   && echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
+   || echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m): " | tee -a $EMAIL_BODY
+echo $GPUSTATUS
 
-# Récupérer l'état des carte vidéo
-ProbeAllGPU
+# Ajout de lignes blanches au corps du courriel
+echo >> $EMAIL_BODY
+echo >> $EMAIL_BODY
 
 # Si mode debug activé
 [ "$DEBUG" = "TRUE" -a ! "$FAILED_GPU" ] && FAILED_GPU="DEBUG"
