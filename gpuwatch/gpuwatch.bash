@@ -278,7 +278,7 @@ GetHardwareInfo() {
    local id=$1
    echo "=================================="
    [ -x $ATIFLASH ] && sudo $ATIFLASH -i $id
-   [ -x $ROCMSMI ] && sudo $ROCMSMI -d $id -a
+   [ -x $ROCMSMI ] && sudo $ROCMSMI -d $id -a 2>/dev/null
 }
 
 #
@@ -446,8 +446,15 @@ echo >> $EMAIL_BODY
 #echo "FAILED_GPU: $FAILED_GPU"
 
 # Si le service est éteint alors ne rien faire
-# c'est sans doute normale
+# c'est possiblement normal pour une maintenance
 if [ $(GetServiceStatus) = off ]; then
+   rm -f $EMAIL_BODY
+   exit 0
+
+# Si cela fait moins de 10 minutes que le serveur
+# a redémarré alors attendre encore un peu qu'une
+# passe complète aie eu lieu
+elif [ $(GetUptime) -lt 10 ]; then
    rm -f $EMAIL_BODY
    exit 0
 
