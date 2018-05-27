@@ -37,7 +37,7 @@ dr-xr-x--- 30 root video 0 fév 18 21:45 /sys/kernel/debug
 ```
 
 # ethminer
-Simple startup script for various releases for ethminer:
+Simple startup script for various releases for `ethminer`:
 * https://github.com/ethereum-mining/ethminer/releases  
 Loosely influenced by:
 * https://gist.github.com/bmatthewshea/9a062c092fd673318f8d208ce44f4f51
@@ -57,7 +57,7 @@ $ sudo chmod 755 /etc/init.d/ethminer
 
 Adjust the following in `/etc/default/ethminer` (and also look into other possible details):
 - `WALLET` -> Your ethereum wallet
-- `RUNAS`  -> User account where the daemon run as (not root!)
+- `RUNAS`  -> User account where the daemon run as (never use `root`!)
 - `DAEMON` -> `ethminer` binary location
 - `WORKER` -> Identifier or `hostname` you whish to use to identify it online
 ```
@@ -67,7 +67,7 @@ $ sudo perl -p -i -e 's?DAEMON=.*?DAEMON="/opt/ethminer/bin/ethminer"?g' /etc/de
 $ sudo perl -p -i -e 's/WORKER=.*/WORKER="<myhostname>"/g' /etc/default/ethminer
 ```
 
-Reload systemd and start the service:
+Add & enabled the service, reload `systemd` and start the service:
 ```
 $ sudo update-rc.d ethminer defaults
 $ sudo update-rc.d ethminer enable
@@ -80,7 +80,7 @@ Make sure the log directory is read/write from the user account you use.
 
 # gpuwatch
 Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.<br/>
-Currently only works with the conjunction of AMD video cards & ethereum
+Currently only works with the conjunction of AMD video cards & `etherminer`.
 
 Place the files as follow:
 - gpuwatch.bash        -> `/usr/local/bin/gpuwatch.bash`
@@ -137,7 +137,7 @@ Configure `postfix` (dependancy package for `mutt`):
 └──────────────────────────────────────┘ 
 ```
 
-Create a `.muttrc` in the $HOME directory of the user account that the daemon will run into (not `root`) with the following:
+Create a `.muttrc` in the $HOME directory of the user account that the daemon will run into (never use `root`) with the following:
 ```
 set realname = "<yourname>"
 set from = "<gmailaddress>"
