@@ -173,9 +173,83 @@ Start `mutt` from the command line.  At first startup it may be impossible to co
 # tmux
 Simple console output script allowing to monitor your system status & hashrate in realtime.
 
+Install `tmux`:
+```
+$ sudo apt-get install tmux
+```
+
 Place the files as follow:
 - tmux.bash        -> `/usr/local/bin/tmux.bash`
 
+Or using the following commands:
+```
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/tmux.bash --output-document=/usr/local/bin/tmux.bash
+$ sudo chmod 755 /usr/local/bin/tmux.bash
+```
+
+Create a `TTY1` directory under `systemd`:
+```
+$ sudo mkdir /etc/systemd/system/getty@tty1.service.d
+```
+
+Create auto-login rule:
+```
+$ sudo -s
+# cat <<EOF > /etc/systemd/system/getty@tty1.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=-/usr/local/bin/tmux.bash
+StandardInput=tty
+StandardOutput=tty
+EOF
+# exit
+```
+
+Test:
+```
+$ sudo systemctl daemon-reload; systemctl restart getty@tty1.service
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to restart 'getty@tty1.service'.
+Authenticating as: th0ma7,,, (th0ma7)
+Password: 
+==== AUTHENTICATION COMPLETE ===
+```
+
+Valider status:
+```
+$ systemctl status getty@tty1.service
+● getty@tty1.service - Getty on tty1
+   Loaded: loaded (/lib/systemd/system/getty@.service; enabled; vendor preset: enabled)
+  Drop-In: /etc/systemd/system/getty@tty1.service.d
+           └─override.conf
+   Active: active (running) since mar 2018-01-02 13:31:35 EST; 1h 26min ago
+     Docs: man:agetty(8)
+           man:systemd-getty-generator(8)
+           http://0pointer.de/blog/projects/serial-console.html
+ Main PID: 1596 (tmux.bash)
+   CGroup: /system.slice/system-getty.slice/getty@tty1.service
+           ├─1596 /bin/sh /usr/local/bin/tmux.bash
+           ├─1663 /usr/bin/tmux new-session -s th0ma7-miner-01 -n Mining -d /usr/bin/top -d1 -uth0ma7
+           ├─1667 /usr/bin/top -d1 -uth0ma7
+           ├─1670 tail -f /var/log/miners/ethminer.log
+           ├─1673 /usr/bin/watch -d -t -n10 sensors | awk /^acpitz-virtual-0/,/^temp1.*/
+           ├─1677 /usr/bin/watch -t -n1000 /bin/echo && /bin/echo kernel:  && /bin/uname -r
+           ├─1688 /usr/bin/sudo /usr/bin/watch -t -n1 /bin/cat /sys/kernel/debug/dri/0/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           ├─1692 /usr/bin/sudo /usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/2/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           ├─1696 /usr/bin/sudo /usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/1/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           ├─1698 /usr/bin/watch -t -n1 /bin/cat /sys/kernel/debug/dri/0/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           ├─1700 /usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/2/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           ├─1717 /usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/1/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+           └─1736 /usr/bin/tmux attach -t th0ma7-miner-01
+
+jan 02 13:31:35 th0ma7-miner-01 systemd[1]: Started Getty on tty1.
+jan 02 13:31:36 th0ma7-miner-01 sudo[1688]:     root : TTY=pts/4 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/watch -t -n1 /bin/cat /sys/kernel/debug/dri/0/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+jan 02 13:31:36 th0ma7-miner-01 sudo[1688]: pam_unix(sudo:session): session opened for user root by root(uid=0)
+jan 02 13:31:36 th0ma7-miner-01 sudo[1692]:     root : TTY=pts/5 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/2/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+jan 02 13:31:36 th0ma7-miner-01 sudo[1692]: pam_unix(sudo:session): session opened for user root by root(uid=0)
+jan 02 13:31:36 th0ma7-miner-01 sudo[1696]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/1/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
+jan 02 13:31:36 th0ma7-miner-01 sudo[1696]: pam_unix(sudo:session): session opened for user root by root(uid=0)
+```
+
 TODO:
-- Dynamic calculation of tmux screens depending of number of GPU detected
-- Further document howto setup systemd
+- Dynamic calculation of tmux screens depending of number of GPU detected as currently fixed to 6
