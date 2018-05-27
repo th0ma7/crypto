@@ -1,5 +1,5 @@
 # th0ma7
-Various derived &amp; home-made shell scripts for OpenWRT &amp; Mining
+Various derived &amp; home-made shell scripts for &amp; Mining
 
 Donnations welcomed at: `0x522d164549E68681dfaC850A2cabdb95686C1fEC`
 
