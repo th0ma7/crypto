@@ -45,10 +45,26 @@ Place the files as follow:
 - ethminer-default     -> `/etc/default/ethminer`
 - ethminer-logrotate.d -> `/etc/logrotate.d/ethminer`
 
-Adjust your `WALLET` in `/etc/default/ethminer`
+Or using the following commands:
+```
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-init.d --output-document=/etc/init.d/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-default --output-document=/etc/default/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-logrotate.d --output-document=/etc/logrotate.d/ethminer
+$ sudo chmod 755 /etc/init.d/ethminer
+```
+
+Adjust your `WALLET`, running user account `RUNAS`, `ethminer` binary location `DAEMON` & hostname `WORKER` in `/etc/default/ethminer` (and also look into other possible details):
+```
+$ sudo perl -p -i -e 's/^RUNAS=.*/RUNAS="<myuser>"/g' /etc/default/ethminer
+$ sudo perl -p -i -e 's/WALLET=.*/WALLET="<mywallet>"/g' /etc/default/ethminer
+$ sudo perl -p -i -e 's?DAEMON=.*?DAEMON="/opt/ethminer/bin/ethminer"?g' /etc/default/ethminer
+$ sudo perl -p -i -e 's/WORKER=.*/WORKER="<myhostname>"/g' /etc/default/ethminer
+```
 
 Reload systemd and start the service:
 ```
+$ sudo update-rc.d ethminer defaults
+$ sudo update-rc.d ethminer enable
 $ sudo systemctl daemon-reload
 $ sudo systemctl restart ethminer
 ```
@@ -65,7 +81,18 @@ Place the files as follow:
 - gpuwatch-cron.d      -> `/etc/cron.d/gpuwatch`
 - gpuwatch-logrotate.d -> `/etc/logrotate.d/gpuwatch`
 
+Or using the following commands:
+```
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch.bash --output-document=/usr/local/bin/gpuwatch.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-cron.d --output-document=/etc/cron.d/gpuwatch
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-logrotate.d --output-document=/etc/logrotate.d/gpuwatch
+$ sudo chmod 755 /usr/local/bin/gpuwatch.bash
+```
+
 Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
+```
+$ sudo perl -p -i -e 's/ th0ma7 / <myuser> /g' /etc/cron.d/gpuwatch
+```
 
 Log files are located here: `/var/log/miners/gpuwatch.log`<br/>
 Make sure the log directory is read/write from the user account you use.
