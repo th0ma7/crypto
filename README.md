@@ -1,6 +1,8 @@
 # th0ma7
 Various derived &amp; home-made shell scripts for OpenWRT &amp; Mining
 
+Donnations welcomed at: 0x522d164549E68681dfaC850A2cabdb95686C1fEC
+
 # Mining scripts preamble
 Scripts are expected to be run within a dedicated user account (e.g. not `root`).<br/>
 I recommend doing the following to ensure your user account as sufficient priviledges.
@@ -53,7 +55,11 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethm
 $ sudo chmod 755 /etc/init.d/ethminer
 ```
 
-Adjust your `WALLET`, running user account `RUNAS`, `ethminer` binary location `DAEMON` & hostname `WORKER` in `/etc/default/ethminer` (and also look into other possible details):
+Adjust the following in `/etc/default/ethminer` (and also look into other possible details):
+- `WALLET` -> Your ethereum wallet
+- `RUNAS`  -> User account where the daemon run as (not root!)
+- `DAEMON` -> `ethminer` binary location
+- `WORKER` -> Identifier or `hostname` you whish to use to identify it online
 ```
 $ sudo perl -p -i -e 's/^RUNAS=.*/RUNAS="<myuser>"/g' /etc/default/ethminer
 $ sudo perl -p -i -e 's/WALLET=.*/WALLET="<mywallet>"/g' /etc/default/ethminer
