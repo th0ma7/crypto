@@ -80,7 +80,7 @@ Make sure the log directory is read/write from the user account you use.
 
 # gpuwatch
 Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.<br/>
-Currently only works with the conjunction of AMD video cards & `etherminer`.
+Currently only works with the conjunction of AMD video cards & `ethminer`.
 
 Place the files as follow:
 - gpuwatch.bash        -> `/usr/local/bin/gpuwatch.bash`
