@@ -26,7 +26,7 @@ c) Mount the debugfs filesystem with video group access by adding the follwing t
 # debugfs - Allow video group access
 nodev /sys/kernel/debug	   debugfs   defaults,gid=44,mode=550   0  0
 ```
-Manually mount:
+Now mount the filesystem:
 ```
 $ sudo mount -av
 ```
