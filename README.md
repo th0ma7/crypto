@@ -21,7 +21,9 @@ $ sudo chmod 664 /var/log/miners/ethminer.log
 $ sudo chown -R <myuser>:adm /var/log/miners
 ```
 
-c) Mount the debugfs filesystem with video group access by adding the follwing to the `/etc/fstab` (`gid=44` being group `video` under Ubuntu):
+c) Mount the debugfs filesystem with video group access by adding the follwing to the `/etc/fstab`:
+- `gid=44` being group `video` under Ubuntu
+- `mode=550` provide read+execute only access to both user & group and prevents access to others
 ```
 # debugfs - Allow video group access
 nodev /sys/kernel/debug	   debugfs   defaults,gid=44,mode=550   0  0
