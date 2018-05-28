@@ -36,7 +36,7 @@ declare PROBE_MAX=3                                  # Nombre de fois que l'on v
 declare HWMON="FALSE"
 declare DEBUG="FALSE"
 #
-declare -i UPTIME=0
+declare -i MIN_UPTIME=10
 declare -i RESTART=0
 declare -i REBOOT=0
 declare LAST_RESTART=""
@@ -250,10 +250,12 @@ ProbeAllGPU() {
    for ((i = 0 ; i < max ; i++ ))
    do
       if [[ "${gpu_status[$i]}" =~ .*ERROR.* ]]; then
+         [ "$DEBUG" = "TRUE" ] && echo "${gpu_status[$i]} = ERROR" 1>&2
+         
          GetHardwareInfo $i >> $EMAIL_BODY
          [ "$FAILED_GPU" ] \
             && FAILED_GPU=$FAILED_GPU",$i" \
-            || FAILED_GPU=$i
+            || FAILED_GPU="$i"
       fi
    done
 
@@ -429,38 +431,46 @@ HOSTNAME=`hostname --short`
     || sudo mount -t debugfs -o remount,gid=44,mode=550 none /sys/kernel/debug/
 
 # Récupérer l'état des carte vidéo
-GPUSTATUS=$(ProbeAllGPU)
+GPUSTATUS=$(mktemp /tmp/gpuwatch.XXXXXX)
+ProbeAllGPU > $GPUSTATUS
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 [ "$HWMON" = "TRUE" ] \
    && echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
    || echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m): " | tee -a $EMAIL_BODY
-echo $GPUSTATUS
+cat $GPUSTATUS
+rm -f $GPUSTATUS
 
 # Ajout de lignes blanches au corps du courriel
 echo >> $EMAIL_BODY
 echo >> $EMAIL_BODY
 
 # Si mode debug activé
-[ "$DEBUG" = "TRUE" -a ! "$FAILED_GPU" ] && FAILED_GPU="DEBUG"
-#echo "FAILED_GPU: $FAILED_GPU"
+[ "$DEBUG" = "TRUE" -a ! "$FAILED_GPU" ] \
+   && FAILED_GPU="DEBUG" \
+   && echo "FAILED_GPU[] -> FAILEDGPU[DEBUG]" 1>&2
 
 # Si le service est éteint alors ne rien faire
 # c'est possiblement normal pour une maintenance
 if [ $(GetServiceStatus) = off ]; then
+   [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] = off" 1>&2
    rm -f $EMAIL_BODY
    exit 0
 
 # Si cela fait moins de 10 minutes que le serveur
 # a redémarré alors attendre encore un peu qu'une
 # passe complète aie eu lieu
-elif [ $(GetUptime) -lt 10 ]; then
+elif [ $(GetUptime) -lt $MIN_UPTIME ]; then
+   [ "$DEBUG" = "TRUE" ] && echo "Uptime[$(GetUptime)] < $MIN_UPTIME" 1>&2
    rm -f $EMAIL_BODY
    exit 0
 
 # Si on a une carte vidéo en erreur
 # ou si le service est en défaut alors
 elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
+   [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] = on" 1>&2
+   [ "$DEBUG" = "TRUE" ] && echo "FAILED_GPU[$FAILED_GPU]" 1>&2
+
    # Retourner l'état "avant" du service dans le courriel
    echo                           >> $EMAIL_BODY
    sudo systemctl status $SERVICE >> $EMAIL_BODY
