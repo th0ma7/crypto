@@ -9,8 +9,9 @@
 # Description:       This allows you to start/stop ethminer as if it
 #                    were a daemon
 ### END INIT INFO
-# Author: Brady Shea <use@github-comments>
-# Source: https://gist.github.com/bmatthewshea/9a062c092fd673318f8d208ce44f4f51
+# Author: th0ma7
+# Source: https://github.com/th0ma7/th0ma7/blob/master/ethminer/ethminer-init.d
+# Inspired from Source: https://gist.github.com/bmatthewshea/9a062c092fd673318f8d208ce44f4f51
 
 set -e
 . /lib/lsb/init-functions
@@ -25,7 +26,6 @@ export GPU_SINGLE_ALLOC_PERCENT=100
 DAEMON="/opt/ethminer/bin/ethminer"
 LOGFILE="/var/log/miners/ethminer.log"
 #
-#WALLET="0812f4b6de7356e209f092dd1ec865d5d9b5e2f6"
 WALLET="522d164549E68681dfaC850A2cabdb95686C1fEC"
 RUNAS="th0ma7"
 WORKER="th0ma7-miner-01"
@@ -61,11 +61,10 @@ echo $VERSION
 case $VERSION in
   0.12.0 ) EXTRA_PARAM="-SC $STRATUMCLIENT -SP $STRATUMPROTO -S $SERVERS:$TCPPORT -FS $FSERVERS:$TCPPORT -O $WALLET.$WORKER";;
   0.13.0 ) EXTRA_PARAM="-HWMON -SC $STRATUMCLIENT -SP $STRATUMPROTO -S $SERVERS:$TCPPORT -FS $FSERVERS:$TCPPORT -O $WALLET.$WORKER";;
-#  0.14.* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT";;
-#  0.14.* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
   0.14.* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
   0.15.0.dev* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
-  0.15.0rc* ) EXTRA_PARAM="-P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
+  0.15.0* ) EXTRA_PARAM="-P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
+#  0.15.0* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
 esac
 
 if [ "$MINING_MODE" = "pool" ]; then
