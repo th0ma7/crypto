@@ -1,6 +1,6 @@
 /var/log/miners/gpuwatch.log {
-       daily
-       rotate 7
+       weekly
+       rotate 12
        copytruncate
        delaycompress
        compress
