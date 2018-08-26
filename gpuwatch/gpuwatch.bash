@@ -91,7 +91,7 @@ GetServiceStatus() {
    elif [ "$zombie" ] ; then
       echo "<defunct>"
    elif [ "$loaded" = "loaded" ]; then
-      if [ -a "$active" = "inactive" ]; then
+      if [ "$active" = "inactive" ]; then
          echo "off"
       elif [ "$active" = "failed" -o "$running" = "(dead)" -o "$running" = "(exited)" ]; then
          echo "<failed>"
