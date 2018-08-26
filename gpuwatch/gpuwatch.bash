@@ -157,7 +157,8 @@ GetGPUMhs() {
    local id=$1
    local mhs=""
 
-   [ -s $SERVICE_LOG ] && mhs=`tail $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu/$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
+   #[ -s $SERVICE_LOG ] && mhs=`tail $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu/$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
+   [ -s $SERVICE_LOG ] && mhs=`tail $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
 
    [ "$mhs" ] && echo "$mhs" || echo "0.00"
 }
