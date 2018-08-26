@@ -20,7 +20,7 @@
 
 declare EMAIL=th0ma7@gmail.com
 declare GPUWATCH_STATUS=$HOME/.gpuwatch              # Fichier d'état avec le nombre de redémarrage du service
-declare HS110IP=192.168.80.6                         # Adresse IP de la prise électrique réseau
+declare HS110IP=192.168.80.21                        # Adresse IP de la prise électrique réseau
 #
 declare ROCMSMI=/opt/rocm/bin/rocm-smi               # https://github.com/RadeonOpenCompute/ROCm
 declare ATIFLASH=/usr/local/bin/atiflash             # https://bitcointalk.org/index.php?topic=1809527.0
@@ -171,7 +171,8 @@ GetGPUWatt() {
    local id=$1
    local watt=""
 
-   watt=`sudo cat /sys/kernel/debug/dri/$id/amdgpu_pm_info | grep "max.GPU.*" | awk '{print $1}' | cut -f1 -d.`
+   #watt=`sudo cat /sys/kernel/debug/dri/$id/amdgpu_pm_info | grep "max.GPU.*" | awk '{print $1}' | cut -f1 -d.`
+   watt=`$ROCMSMI -d $id -P | grep "GPU Power" | awk '{print $6}' | cut -f1 -d.`
    echo "$watt"
 }
 
