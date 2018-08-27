@@ -47,6 +47,8 @@ STRATUMPROTO="0"
 # stratum+ssl stratum+tcp stratum+tls stratum+tls12 stratum1+ssl stratum1+tcp stratum1+tls stratum1+tls12 stratum2+ssl stratum2+tcp stratum2+tls stratum2+tls12
 STRATUMURL="stratum+ssl"
 #STRATUMURL="stratum+tcp"
+# The current stable OpenCL kernel only supports exactly 8 threads. Thread parameter will be ignored.
+CLPARALLELHASH="2"
 
 # Default Settings - Edit /etc/default/ethminer instead
 if [ -r /etc/default/ethminer ]; then
@@ -56,12 +58,13 @@ fi
 # Find ethminer version
 VERSION=`$DAEMON -V 2>&1 | grep -v ^$ | head -1 | awk '{print $NF}'`
 echo $VERSION
+
 case $VERSION in
   0.12.0 ) EXTRA_PARAM="-SC $STRATUMCLIENT -SP $STRATUMPROTO -S $SERVERS:$TCPPORT -FS $FSERVERS:$TCPPORT -O $WALLET.$WORKER";;
   0.13.0 ) EXTRA_PARAM="-HWMON -SC $STRATUMCLIENT -SP $STRATUMPROTO -S $SERVERS:$TCPPORT -FS $FSERVERS:$TCPPORT -O $WALLET.$WORKER";;
   0.14.* ) EXTRA_PARAM="-HWMON -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
-  0.15.0* ) EXTRA_PARAM="-P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
-  0.16.0* ) EXTRA_PARAM="\--HWMON 1 -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT";;
+  0.15.0* ) EXTRA_PARAM="--HWMON 1 -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT --cl-parallel-hash $CLPARALLELHASH --cl-kernel 1";;
+  0.16.0* ) EXTRA_PARAM="--HWMON 1 -P $STRATUMURL://0x$WALLET.$WORKER@$SERVERS:$SSLPORT -P $STRATUMURL://0x$WALLET.$WORKER@$FSERVERS:$SSLPORT";;
 esac
 
 if [ "$MINING_MODE" = "pool" ]; then
