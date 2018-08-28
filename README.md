@@ -97,20 +97,20 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuw
 $ sudo chmod 755 /usr/local/bin/gpuwatch.bash
 ```
 The script requires the following:
-- rocm-smi from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
+- `rocm-smi` from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
 ```
 $ wget -qO - http://repo.radeon.com/rocm/apt/debian/rocm.gpg.key | sudo apt-key add -
 $ echo "deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main" | sudo tee /etc/apt/sources.list.d/rocm.list
 $ sudo apt-get update
 $ sudo apt-get install rocm-smi
 ```
-- atiflash to get further info of cards (https://drive.google.com/file/d/0B60njIARS0fLcEtsNXFfeTZ5LXc/view) <- Can probably be found elsewhere, just place it under /usr/local/bin
-- TP-Link helper script for total Watt monitoring (https://github.com/ggeorgovassilis/linuxscripts)
+- `atiflash` to get further info of cards (https://drive.google.com/file/d/0B60njIARS0fLcEtsNXFfeTZ5LXc/view).  Can probably be found elsewhere, just place it under `/usr/local/bin`
+- TP-Link `hs100.sh` helper script for total Watt monitoring using HS-110 plugs (https://github.com/ggeorgovassilis/linuxscripts)
 ```
 $ sudo wget https://raw.githubusercontent.com/ggeorgovassilis/linuxscripts/master/tp-link-hs100-smartplug/hs100.sh  --output-document=/usr/local/bin/hs100.sh
 $ sudo chmod 755 /usr/local/bin/hs100.sh
 ```
-- jq JSON parser
+- `jq` JSON parser
 ```
 $ sudo apt-get update
 $ sudo apt-get install jq
