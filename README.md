@@ -3,7 +3,7 @@ Various derived &amp; home-made shell scripts for `ethminer` Mining
 
 Donnations welcomed at: `0x522d164549E68681dfaC850A2cabdb95686C1fEC`
 
-# Mining scripts preamble
+# Mining Scripts Preamble
 Scripts are expected to be run within a dedicated user account (e.g. not `root`).<br/>
 I recommend doing the following to ensure your user account as sufficient priviledges.
 
@@ -78,7 +78,7 @@ $ sudo systemctl restart ethminer
 ```
 
 Log files are located under `/var/log/miners/ethminer.log`<br/>
-Make sure the log directory is read/write from the user account you use.
+Make sure the log directory is read/write for the user account you use and create initial log file with proper permissions (see Mining Scripts Preamble section).
 
 # gpuwatch
 Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.<br/>
@@ -95,6 +95,25 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuw
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-cron.d --output-document=/etc/cron.d/gpuwatch
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-logrotate.d --output-document=/etc/logrotate.d/gpuwatch
 $ sudo chmod 755 /usr/local/bin/gpuwatch.bash
+```
+The script requires the following:
+- rocm-smi from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
+```
+$ wget -qO - http://repo.radeon.com/rocm/apt/debian/rocm.gpg.key | sudo apt-key add -
+$ echo "deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main" | sudo tee /etc/apt/sources.list.d/rocm.list
+$ sudo apt-get update
+$ sudo apt-get install rocm-smi
+```
+- atiflash to get further info of cards (https://drive.google.com/file/d/0B60njIARS0fLcEtsNXFfeTZ5LXc/view) <- Can probably be found elsewhere, just place it under /usr/local/bin
+- TP-Link helper script for total Watt monitoring (https://github.com/ggeorgovassilis/linuxscripts)
+```
+$ sudo wget https://raw.githubusercontent.com/ggeorgovassilis/linuxscripts/master/tp-link-hs100-smartplug/hs100.sh  --output-document=/usr/local/bin/hs100.sh
+$ sudo chmod 755 /usr/local/bin/hs100.sh
+```
+- jq JSON parser
+```
+$ sudo apt-get update
+$ sudo apt-get install jq
 ```
 
 Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
@@ -217,7 +236,7 @@ Password:
 ==== AUTHENTICATION COMPLETE ===
 ```
 
-Valider status:
+Validate status:
 ```
 $ systemctl status getty@tty1.service
 ● getty@tty1.service - Getty on tty1
