@@ -121,6 +121,11 @@ Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
 $ sudo perl -p -i -e 's/ th0ma7 / <myuser> /g' /etc/cron.d/gpuwatch
 ```
 
+Change the IP to match your TP-Link HS-110 device:
+```
+$ sudo perl -p -i -e 's/HS110IP=.*/HS110IP=<myip>/g' /usr/local/bin/gpuwatch.bash
+```
+
 Log files are located here: `/var/log/miners/gpuwatch.log`<br/>
 Make sure the log directory is read/write from the user account you use.
 
