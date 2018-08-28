@@ -163,7 +163,7 @@ Configure `postfix` (dependancy package for `mutt`):
 └──────────────────────────────────────┘ 
 ```
 
-Create a `.muttrc` in the $HOME directory of the user account that the daemon will run into (never use `root`) with the following:
+Create a `.muttrc` in the $HOME directory of the user account the daemon will run into (never use `root`) with the following:
 ```
 set realname = "<yourname>"
 set from = "<gmailaddress>"
