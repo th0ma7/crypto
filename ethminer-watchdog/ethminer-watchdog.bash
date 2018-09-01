@@ -287,6 +287,22 @@ GetHardwareInfo() {
 }
 
 #
+# ProbeSoftFreeze()
+#
+# Surveille si ethminer fonctionne mais n'est plus en
+# mesure de soumettre de résultats valides
+#
+ProbeSoftFreeze() {
+   local date_1h=`date -d '1 hour ago' "+%H:%M:"`
+   local date_now=`date -d 'now' "+%H:%M:"`
+   local -i nb_accept=0
+   
+   #printf "sed -n '/$date_1h/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l\n"
+   nb_accept=`eval sed -n '/$date_1h/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l`
+   echo $nb_accept
+}
+
+#
 # MailAlert()
 #
 # Entrée: Le message d'alerte à concatenner à l'objet du courriel ($1)
@@ -449,8 +465,8 @@ ProbeAllGPU > $GPUSTATUS
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 [ "$HWMON" = "TRUE" ] \
-   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
-   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m): " | tee -a $EMAIL_BODY
+   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze)**Acc/h up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
+   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze)**Acc/h up/$(GetUptime)m): " | tee -a $EMAIL_BODY
 cat $GPUSTATUS
 rm -f $GPUSTATUS
 
@@ -481,7 +497,7 @@ elif [ $(GetUptime) -lt $MIN_UPTIME ]; then
 # Si on a une carte vidéo en erreur
 # ou si le service est en défaut alors
 elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
-   [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] = on" 1>&2
+   [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] != on" 1>&2
    [ "$DEBUG" = "TRUE" ] && echo "FAILED_GPU[$FAILED_GPU]" 1>&2
 
    # Retourner l'état "avant" du service dans le courriel
@@ -494,6 +510,26 @@ elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
 
    # Si nous sommes ici alors on a tenté un SeviceRestart
    # Validons l'état actuel sinon reboot
+   sleep 10
+   [ ! $(GetServiceStatus) = on ] && SystemReboot
+
+# Si ethminer est en "soft freeze"
+# ref: https://github.com/ethereum-mining/ethminer/issues/1531
+elif [ $(ProbeSoftFreeze) -eq 0 ]; then
+   echo                           >> $EMAIL_BODY
+   echo "SOFT FREEZE!!!"          >> $EMAIL_BODY
+
+   # Retourner l'état "avant" du service dans le courriel
+   echo                           >> $EMAIL_BODY
+   sudo systemctl status $SERVICE >> $EMAIL_BODY
+
+   [ $RESTART -lt $RESTART_MAX ] \
+      && ServiceRestart \
+      || SystemReboot
+
+   # Si nous sommes ici alors on a tenté un SeviceRestart
+   # Validons l'état actuel sinon reboot
+   sleep 10
    [ ! $(GetServiceStatus) = on ] && SystemReboot
 fi
 
