@@ -128,6 +128,12 @@ $ sudo perl -p -i -e 's/HS110IP=.*/HS110IP=<myip>/g' /usr/local/bin/ethminer-wat
 
 Log files are located here: `/var/log/miners/ethminer-watchdog.log`<br/>
 Make sure the log directory is read/write from the user account you use.
+```
+$ sudo mkdir /var/log/miners
+$ sudo touch /var/log/miners/ethminer-watchdog.log
+$ sudo chmod 664 /var/log/miners/ethminer-watchdog.log
+$ sudo chown -R <myuser>:adm /var/log/miners
+```
 
 Install `mutt` client:
 ```
