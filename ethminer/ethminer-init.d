@@ -36,7 +36,7 @@ SERVERS="us1.ethermine.org"
 FSERVERS="us2.ethermine.org"
 TCPPORT="4444"
 SSLPORT="5555"
-FARM_RECHECK="2000"
+FARM_RECHECK="2000"                 # Useless in stratum mode
 
 # pool, proxy, solo :
 MINING_MODE="pool"
@@ -68,8 +68,9 @@ case $VERSION in
 esac
 
 if [ "$MINING_MODE" = "pool" ]; then
-  # Running Stratum Pool connection (-S)
-  DAEMON_OPTS="$GPU $EXTRA_PARAM --farm-recheck $FARM_RECHECK"
+  # Running Stratum Pool connection
+  # Note: --farm-recheck is not needed in stratum mode
+  DAEMON_OPTS="$GPU $EXTRA_PARAM"
 else
   # Running ETH-PROXY or SOLO mining - Set to farm mode (-F)
   DAEMON_OPTS="$GPU $EXTRA_PARAM --farm-recheck $FARM_RECHECK -SP $STRATUMPROTO -F $SERVERS"
