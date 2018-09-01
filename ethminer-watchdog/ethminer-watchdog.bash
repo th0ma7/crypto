@@ -37,6 +37,8 @@ declare HWMON="FALSE"
 declare DEBUG="FALSE"
 declare NOACT="FALSE"
 #
+declare -i SOFTFREEZE=20                             # Durée maximale de détection d'un "soft-freeze"
+#
 declare -i MIN_UPTIME=10
 declare -i RESTART=0
 declare -i REBOOT=0
@@ -293,12 +295,15 @@ GetHardwareInfo() {
 # mesure de soumettre de résultats valides
 #
 ProbeSoftFreeze() {
-   local date_1h=`date -d '1 hour ago' "+%H:%M:"`
+   local softfreeze_timeout=$SOFTFREEZE
+   [ $# -eq 1 ] && softfreeze_timeout=$1
+
+   local date_before=`date -d "$softfreeze_timeout minutes ago" "+%H:%M:"`
    local date_now=`date -d 'now' "+%H:%M:"`
    local -i nb_accept=0
    
-   #printf "sed -n '/$date_1h/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l\n"
-   nb_accept=`eval sed -n '/$date_1h/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l`
+   #printf "sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
+   nb_accept=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l`
    echo $nb_accept
 }
 
@@ -465,8 +470,8 @@ ProbeAllGPU > $GPUSTATUS
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 [ "$HWMON" = "TRUE" ] \
-   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze)**Acc/h up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
-   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze)**Acc/h up/$(GetUptime)m): " | tee -a $EMAIL_BODY
+   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
+   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h up/$(GetUptime)m): " | tee -a $EMAIL_BODY
 cat $GPUSTATUS
 rm -f $GPUSTATUS
 
@@ -516,8 +521,8 @@ elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
 # Si ethminer est en "soft freeze"
 # ref: https://github.com/ethereum-mining/ethminer/issues/1531
 elif [ $(ProbeSoftFreeze) -eq 0 ]; then
-   echo                           >> $EMAIL_BODY
-   echo "SOFT FREEZE!!!"          >> $EMAIL_BODY
+   echo                                     >> $EMAIL_BODY
+   echo "SOFT FREEZE TIMEOUT: $SOFTFREEZE"  >> $EMAIL_BODY
 
    # Retourner l'état "avant" du service dans le courriel
    echo                           >> $EMAIL_BODY
