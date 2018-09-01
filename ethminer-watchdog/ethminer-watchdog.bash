@@ -494,7 +494,7 @@ if [ "$HWMON" = "TRUE" ]; then
 else
    echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
 fi
-echo -ne "\n$DATE ethminer-watchdog " && cat $GPUSTATUS
+echo -ne "\n$DATE ethminer-watchdog $HOSTNAME " && cat $GPUSTATUS
 rm -f $GPUSTATUS
 
 # Ajout de lignes blanches au corps du courriel
