@@ -79,6 +79,12 @@ $ sudo systemctl restart ethminer
 
 Log files are located under `/var/log/miners/ethminer.log`<br/>
 Make sure the log directory is read/write for the user account you use and create initial log file with proper permissions (see Mining Scripts Preamble section).
+```
+$ sudo mkdir /var/log/miners
+$ sudo touch /var/log/miners/ethminer.log
+$ sudo chmod 664 /var/log/miners/ethminer.log
+$ sudo chown -R <myuser>:adm /var/log/miners
+```
 
 # Ethminer Watchdog
 Simple script to monitor the GPU of your mining rig along with status of `ethminer` service and restart or reboot if a GPU is hung.<br/>
