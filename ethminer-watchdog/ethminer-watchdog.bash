@@ -2,7 +2,7 @@
 
 ########################################################
 #
-# gpuwatch.bash
+# ethminer-watchdog.bash
 #
 # Écrit par: th0ma7@gmail.com
 #
@@ -19,7 +19,7 @@
 ########################################################
 
 declare EMAIL=th0ma7@gmail.com
-declare GPUWATCH_STATUS=$HOME/.gpuwatch              # Fichier d'état avec le nombre de redémarrage du service
+declare GPUWATCH_STATUS=$HOME/.ethminer-watchdog     # Fichier d'état avec le nombre de redémarrage du service
 declare HS110IP=192.168.80.21                        # Adresse IP de la prise électrique réseau
 #
 declare ROCMSMI=/opt/rocm/bin/rocm-smi               # https://github.com/RadeonOpenCompute/ROCm
@@ -434,7 +434,7 @@ if [ "$DEBUG" = "TRUE" ]; then
    #exit 0
 fi
 
-EMAIL_BODY=$(mktemp /tmp/gpuwatch.XXXXXX)
+EMAIL_BODY=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
 DATE=`date +%Y%m%d-%H%M`
 HOSTNAME=`hostname --short`
 
@@ -444,13 +444,13 @@ HOSTNAME=`hostname --short`
     || sudo mount -t debugfs -o remount,gid=44,mode=550 none /sys/kernel/debug/
 
 # Récupérer l'état des carte vidéo
-GPUSTATUS=$(mktemp /tmp/gpuwatch.XXXXXX)
+GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
 ProbeAllGPU > $GPUSTATUS
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 [ "$HWMON" = "TRUE" ] \
-   && echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
-   || echo -ne "GPUWatch ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m): " | tee -a $EMAIL_BODY
+   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
+   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) up/$(GetUptime)m): " | tee -a $EMAIL_BODY
 cat $GPUSTATUS
 rm -f $GPUSTATUS
 
