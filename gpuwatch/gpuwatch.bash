@@ -35,6 +35,7 @@ declare PROBE_MAX=3                                  # Nombre de fois que l'on v
 #
 declare HWMON="FALSE"
 declare DEBUG="FALSE"
+declare NOACT="FALSE"
 #
 declare -i MIN_UPTIME=10
 declare -i RESTART=0
@@ -332,7 +333,7 @@ SystemReboot() {
 
    # Nettoyer ce qui traine
    rm -f $EMAIL_BODY
-   [ ! "$DEBUG" = "TRUE" ] && sudo reboot
+   [ ! "$NOACT" = "TRUE" ] && sudo reboot
 }
 
 #
@@ -352,7 +353,7 @@ ServiceRestart() {
    local status=""
 
    # Redémarrer le service
-   [ ! "$DEBUG" = "TRUE" ] && sudo systemctl restart $SERVICE 1>/dev/null 2>&1
+   [ ! "$NOACT" = "TRUE" ] && sudo systemctl restart $SERVICE 1>/dev/null 2>&1
    
    RESTART+=1
    LAST_RESTART=$DATE
@@ -390,11 +391,12 @@ WriteStatus() {
 
 
 Help() {
-   echo "Monitoring actif d'état des GPU"
+   echo "Monitoring actif d'état des GPU et du démon ethminer"
    echo "$0"
-   echo -ne "\t-HWMON\tAffiche la température des GPU\n"
-   echo -ne "\t--debug\tActive le mode déverminage\n"
-   echo -ne "\t--help\tAffiche cet aide\n"
+   printf '%20.20s : ' "--HWMON | -HWMON" && printf "Affiche la température des GPU\n"
+   printf '%20.20s : ' "--debug" && printf "Active le mode déverminage\n"
+   printf '%20.20s : ' "--noact | --no-act" && printf "N'active pas le redémarrage du service ou du système\n"
+   printf '%20.20s : ' "--help" && printf "Affiche cet aide\n"
    
    exit 0
 }
@@ -417,11 +419,20 @@ fi
 for PARAM in $*
 do
    case $PARAM in
-      -HWMON ) HWMON="TRUE";;
-     --debug ) DEBUG="TRUE";;
-      --help ) Help;;
+      -HWMON | --HWMON ) HWMON="TRUE";;
+               --debug ) DEBUG="TRUE";;
+    --no-act | --noact ) NOACT="TRUE";;
+                --help ) Help;;
    esac
 done
+
+if [ "$DEBUG" = "TRUE" ]; then
+   echo "DEBUG mode ON" 1>&2
+   echo "HWMON: $HWMON"
+   echo "DEBUG: $DEBUG"
+   echo "NOACT: $NOACT"
+   #exit 0
+fi
 
 EMAIL_BODY=$(mktemp /tmp/gpuwatch.XXXXXX)
 DATE=`date +%Y%m%d-%H%M`
