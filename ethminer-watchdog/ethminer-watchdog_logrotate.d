@@ -1,4 +1,4 @@
-/var/log/miners/gpuwatch.log {
+/var/log/miners/ethminer-watchdog.log {
        weekly
        rotate 12
        copytruncate

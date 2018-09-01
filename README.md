@@ -80,21 +80,21 @@ $ sudo systemctl restart ethminer
 Log files are located under `/var/log/miners/ethminer.log`<br/>
 Make sure the log directory is read/write for the user account you use and create initial log file with proper permissions (see Mining Scripts Preamble section).
 
-# gpuwatch
-Simple script to monitor the GPU of your mining rig and restart or reboot if a GPU is hung.<br/>
-Currently only works with the conjunction of AMD video cards & `ethminer`.
+# Ethminer Watchdog
+Simple script to monitor the GPU of your mining rig along with status of `ethminer` service and restart or reboot if a GPU is hung.<br/>
+Currently only works with AMD video cards.
 
 Place the files as follow:
-- gpuwatch.bash        -> `/usr/local/bin/gpuwatch.bash`
-- gpuwatch-cron.d      -> `/etc/cron.d/gpuwatch`
-- gpuwatch-logrotate.d -> `/etc/logrotate.d/gpuwatch`
+- ethminer-watchdog.bash        -> `/usr/local/bin/ethminer-watchdog.bash`
+- ethminer-watchdog_cron.d      -> `/etc/cron.d/ethminer-watchdog`
+- ethminer-watchdog_logrotate.d -> `/etc/logrotate.d/ethminer-watchdog`
 
 Or using the following commands:
 ```
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch.bash --output-document=/usr/local/bin/gpuwatch.bash
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-cron.d --output-document=/etc/cron.d/gpuwatch
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/gpuwatch/gpuwatch-logrotate.d --output-document=/etc/logrotate.d/gpuwatch
-$ sudo chmod 755 /usr/local/bin/gpuwatch.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog.bash --output-document=/usr/local/bin/ethminer-watchdog.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_cron.d --output-document=/etc/cron.d/ethminer-watchdog
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
+$ sudo chmod 755 /usr/local/bin/ethminer-watchdog.bash
 ```
 The script requires the following:
 - `rocm-smi` from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
@@ -116,17 +116,17 @@ $ sudo apt-get update
 $ sudo apt-get install jq
 ```
 
-Adjust the username used in `/etc/cron.d/gpuwatch` file to match yours.
+Adjust the username used in `/etc/cron.d/ethminer-watchdog` file to match yours.
 ```
-$ sudo perl -p -i -e 's/ th0ma7 / <myuser> /g' /etc/cron.d/gpuwatch
+$ sudo perl -p -i -e 's/ th0ma7 / <myuser> /g' /etc/cron.d/ethminer-watchdog
 ```
 
 Change the IP to match your TP-Link HS-110 device:
 ```
-$ sudo perl -p -i -e 's/HS110IP=.*/HS110IP=<myip>/g' /usr/local/bin/gpuwatch.bash
+$ sudo perl -p -i -e 's/HS110IP=.*/HS110IP=<myip>/g' /usr/local/bin/ethminer-watchdog.bash
 ```
 
-Log files are located here: `/var/log/miners/gpuwatch.log`<br/>
+Log files are located here: `/var/log/miners/ethminer-watchdog.log`<br/>
 Make sure the log directory is read/write from the user account you use.
 
 Install `mutt` client:
