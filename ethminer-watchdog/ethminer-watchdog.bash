@@ -37,7 +37,7 @@ declare HWMON="FALSE"
 declare DEBUG="FALSE"
 declare NOACT="FALSE"
 #
-declare -i SOFTFREEZE=20                             # Durée maximale de détection d'un "soft-freeze"
+declare -i SOFTFREEZE=10                             # Durée maximale de détection d'un "soft-freeze"
 #
 declare -i MIN_UPTIME=10
 declare -i RESTART=0
