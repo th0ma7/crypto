@@ -295,7 +295,7 @@ GetHardwareInfo() {
 # mesure de soumettre de résultats valides
 #
 ProbeSoftFreeze() {
-   local softfreeze_timeout=$SOFTFREEZE
+   local -i softfreeze_timeout=$SOFTFREEZE
    [ $# -eq 1 ] && softfreeze_timeout=$1
 
    local date_before=`date -d "$softfreeze_timeout minutes ago" "+%H:%M:"`
@@ -306,6 +306,26 @@ ProbeSoftFreeze() {
    nb_accept=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l`
    echo $nb_accept
 }
+
+#
+# ProbeBadGPUresults()
+#
+# Calcul le nombre d'instance "GPU gave incorrect result!"
+# au courant de la dernière heure (ou nb. min en paramètre)
+#
+ProbeBadGPUresults() {
+   local -i badresults_timeout=60
+   [ $# -eq 1 ] && badresults_timeout=$1
+
+   local date_before=`date -d "$badresults_timeout minutes ago" "+%H:%M:"`
+   local date_now=`date -d 'now' "+%H:%M:"`
+   local -i nb_badresults=0
+   
+   #printf "sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l\n" 1>&2
+   nb_badresults=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l`
+   echo $nb_badresults
+}
+
 
 #
 # MailAlert()
@@ -469,10 +489,12 @@ GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
 ProbeAllGPU > $GPUSTATUS
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
-[ "$HWMON" = "TRUE" ] \
-   && echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h up/$(GetUptime)m $(GetTotalPowerUsage)): " | tee -a $EMAIL_BODY \
-   || echo -ne "ethminer-watchdog ($HOSTNAME $DATE $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h up/$(GetUptime)m): " | tee -a $EMAIL_BODY
-cat $GPUSTATUS
+if [ "$HWMON" = "TRUE" ]; then
+   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
+else
+   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Acc/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
+fi
+echo -ne "\n$DATE ethminer-watchdog " && cat $GPUSTATUS
 rm -f $GPUSTATUS
 
 # Ajout de lignes blanches au corps du courriel
