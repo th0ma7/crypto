@@ -16,8 +16,6 @@ $ sudo usermod -a -G video <myuser>
 b) Create a `log` directory:
 ```
 $ sudo mkdir /var/log/miners
-$ sudo touch /var/log/miners/ethminer.log
-$ sudo chmod 664 /var/log/miners/ethminer.log
 $ sudo chown -R <myuser>:adm /var/log/miners
 ```
 
@@ -38,7 +36,7 @@ $ ls -lad /sys/kernel/debug
 dr-xr-x--- 30 root video 0 fév 18 21:45 /sys/kernel/debug
 ```
 
-# ethminer
+# Ethminer Service
 Simple startup script for various releases for `ethminer`:
 * https://github.com/ethereum-mining/ethminer/releases  
 Loosely influenced by:
