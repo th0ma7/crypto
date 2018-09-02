@@ -494,9 +494,11 @@ echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 if [ "$HWMON" = "TRUE" ]; then
    echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
    [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
+   [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 else
    echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
    [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
+   [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 fi
 
 # Récupérer l'état des carte vidéo
