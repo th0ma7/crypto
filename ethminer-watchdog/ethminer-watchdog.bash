@@ -212,9 +212,11 @@ ProbeGPU() {
    # Si la charge GPU est 0 absolu (0,0,0) mais que l'on a tout de meme un Mh/s > 0
    # ou si la charge est à 100% mais avec un Mh/s = 0
    if [ "$gpu_load" = "0,0,0" -a ! $gpu_mhs = "0.00" ]; then
-      echo " gpu/$id[${gpu_mhs}Mh/s 0% ${gpu_temp} ${gpu_watt}:ERROR]"
+      echo -ne " gpu/$id[${gpu_mhs}Mh/s 0% ${gpu_temp} ${gpu_watt}"
+      [ $(GetServiceStatus) = off ] && echo ":OFF]" || echo ":ERROR]"
    elif [ "$gpu_load" = "100" -a $gpu_mhs = "0.00" ]; then
-      echo " gpu/$id[0.00Mh/s ${gpu_load}% ${gpu_temp} ${gpu_watt}:ERROR]"
+      echo -ne " gpu/$id[0.00Mh/s ${gpu_load}% ${gpu_temp} ${gpu_watt}"
+      [ $(GetServiceStatus) = off ] && echo ":OFF]" || echo ":ERROR]"
          
    # Le système est forcément en maintenance
    # ET/OU les journaux ont tourné donc on a pas
@@ -255,9 +257,13 @@ ProbeAllGPU() {
    for ((i = 0 ; i < max ; i++ ))
    do
       if [[ "${gpu_status[$i]}" =~ .*ERROR.* ]]; then
-         [ "$DEBUG" = "TRUE" ] && echo "${gpu_status[$i]} = ERROR" 1>&2
-         
-         GetHardwareInfo $i >> $EMAIL_BODY
+         if [ "$DEBUG" = "TRUE" ]; then
+            [ $(GetServiceStatus) = off ] \
+		 && echo "${gpu_status[$i]} = OFF" 1>&2 \
+		 || echo "${gpu_status[$i]} = ERROR" 1>&2
+         fi
+
+         [ ! $(GetServiceStatus) = off ] && GetHardwareInfo $i >> $EMAIL_BODY
          [ "$FAILED_GPU" ] \
             && FAILED_GPU=$FAILED_GPU",$i" \
             || FAILED_GPU="$i"
@@ -484,16 +490,18 @@ HOSTNAME=`hostname --short`
 [ `ls -1 /sys/kernel/debug 1>/dev/null 2>&1` ] \
     || sudo mount -t debugfs -o remount,gid=44,mode=550 none /sys/kernel/debug/
 
-# Récupérer l'état des carte vidéo
-GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
-ProbeAllGPU > $GPUSTATUS
-
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 if [ "$HWMON" = "TRUE" ]; then
    echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
+   [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
 else
    echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
+   [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
 fi
+
+# Récupérer l'état des carte vidéo
+GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
+ProbeAllGPU > $GPUSTATUS
 echo -ne "\n$DATE ethminer-watchdog $HOSTNAME " && cat $GPUSTATUS
 rm -f $GPUSTATUS
 
@@ -501,10 +509,14 @@ rm -f $GPUSTATUS
 echo >> $EMAIL_BODY
 echo >> $EMAIL_BODY
 
-# Si mode debug activé
-[ "$DEBUG" = "TRUE" -a ! "$FAILED_GPU" ] \
-   && FAILED_GPU="DEBUG" \
-   && echo "FAILED_GPU[] -> FAILEDGPU[DEBUG]" 1>&2
+# Ajouter la mention du mode DEBUG à l'état des GPU
+if [ "$DEBUG" = "TRUE" ]; then
+   [ ! "$FAILED_GPU" ] && FAILED_GPU="DEBUG" || FAILED_GPU="$FAILED_GPU,DEBUG"
+fi
+# Ajouter la mention que le service est éteint (OFF)
+if [ $(GetServiceStatus) = off ]; then
+   [ ! "$FAILED_GPU" ] && FAILED_GPU="OFF" || FAILED_GPU="$FAILED_GPU,OFF"
+fi
 
 # Si le service est éteint alors ne rien faire
 # c'est possiblement normal pour une maintenance
