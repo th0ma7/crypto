@@ -159,9 +159,10 @@ GetGPUTemp() {
 GetGPUMhs() {
    local id=$1
    local mhs=""
-
-   #[ -s $SERVICE_LOG ] && mhs=`tail $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu/$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
-   [ -s $SERVICE_LOG ] && mhs=`tail -200 $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
+   local date_before=`date -d "5 minutes ago" "+%H:%M:"`
+   local date_now=`date -d 'now' "+%H:%M:"`
+   
+   [ -s $SERVICE_LOG ] && mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
 
    [ "$mhs" ] && echo "$mhs" || echo "0.00"
 }
