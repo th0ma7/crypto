@@ -158,13 +158,27 @@ GetGPUTemp() {
 # Variable Globale: $SERVICE_LOG
 GetGPUMhs() {
    local id=$1
-   local mhs=""
+   local gpu_mhs=""
    local date_before=`date -d "5 minutes ago" "+%H:%M:"`
    local date_now=`date -d 'now' "+%H:%M:"`
    
-   [ -s $SERVICE_LOG ] && mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" | awk '{print $1}'`
+   [ -s $SERVICE_LOG ] && gpu_mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | awk '{print $1}'`
+   [ "$gpu_mhs" ] && echo "$gpu_mhs" || echo "0.00"
+}
 
-   [ "$mhs" ] && echo "$mhs" || echo "0.00"
+#
+# GetTotalMhs()
+#
+# Entrée: no. d'identification de la carte vidéo ($1 -> $id)
+# Sortie: température en C de la carte vidéo
+# Variable Globale: $SERVICE_LOG
+GetTotalMhs() {
+   local total_mhs=""
+   local date_before=`date -d "5 minutes ago" "+%H:%M:"`
+   local date_now=`date -d 'now' "+%H:%M:"`
+   
+   [ -s $SERVICE_LOG ] && total_mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk '{print $6}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'`
+   [ "$total_mhs" ] && echo "$total_mhs" || echo "0.00"
 }
 
 #
@@ -493,11 +507,11 @@ HOSTNAME=`hostname --short`
 
 echo -ne "$0 $*\n\n" >> $EMAIL_BODY
 if [ "$HWMON" = "TRUE" ]; then
-   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
+	echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
    [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
    [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 else
-   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
+   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
    [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
    [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 fi
