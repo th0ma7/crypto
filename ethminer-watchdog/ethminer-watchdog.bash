@@ -160,9 +160,8 @@ GetGPUMhs() {
    local id=$1
    local gpu_mhs=""
    local date_before=`date -d "5 minutes ago" "+%H:%M:"`
-   local date_now=`date -d 'now' "+%H:%M:"`
    
-   [ -s $SERVICE_LOG ] && gpu_mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | awk '{print $1}'`
+   [ -s $SERVICE_LOG ] && gpu_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | awk '{print $1}'`
    [ "$gpu_mhs" ] && echo "$gpu_mhs" || echo "0.00"
 }
 
@@ -175,9 +174,8 @@ GetGPUMhs() {
 GetTotalMhs() {
    local total_mhs=""
    local date_before=`date -d "5 minutes ago" "+%H:%M:"`
-   local date_now=`date -d 'now' "+%H:%M:"`
    
-   [ -s $SERVICE_LOG ] && total_mhs=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep Speed | tail -1 | awk '{print $6}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'`
+   [ -s $SERVICE_LOG ] && total_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk '{print $6}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'`
    [ "$total_mhs" ] && echo "$total_mhs" || echo "0.00"
 }
 
@@ -320,11 +318,10 @@ ProbeSoftFreeze() {
    [ $# -eq 1 ] && softfreeze_timeout=$1
 
    local date_before=`date -d "$softfreeze_timeout minutes ago" "+%H:%M:"`
-   local date_now=`date -d 'now' "+%H:%M:"`
    local -i nb_accept=0
    
-   #printf "sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
-   nb_accept=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep '**Accepted' | wc -l`
+   #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
+   nb_accept=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep '**Accepted' | wc -l`
    echo $nb_accept
 }
 
@@ -339,11 +336,10 @@ ProbeBadGPUresults() {
    [ $# -eq 1 ] && badresults_timeout=$1
 
    local date_before=`date -d "$badresults_timeout minutes ago" "+%H:%M:"`
-   local date_now=`date -d 'now' "+%H:%M:"`
    local -i nb_badresults=0
    
-   #printf "sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l\n" 1>&2
-   nb_badresults=`eval sed -n '/$date_before/,/$date_now/p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l`
+   #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l\n" 1>&2
+   nb_badresults=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l`
    echo $nb_badresults
 }
 
@@ -505,26 +501,32 @@ HOSTNAME=`hostname --short`
 [ `ls -1 /sys/kernel/debug 1>/dev/null 2>&1` ] \
     || sudo mount -t debugfs -o remount,gid=44,mode=550 none /sys/kernel/debug/
 
-echo -ne "$0 $*\n\n" >> $EMAIL_BODY
-if [ "$HWMON" = "TRUE" ]; then
-	echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" | tee -a $EMAIL_BODY
-   [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
-   [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
-else
-   echo -ne "$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m" | tee -a $EMAIL_BODY
-   [ $(GetServiceStatus) = off ] && echo -ne "\t*** service $SERVICE off ***"
-   [ $(GetUptime) -lt $MIN_UPTIME ] && echo -ne "\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
-fi
+OUT_LINE1=""
+OUT_LINE2=""
+
+# Preparer l'affichage en sortie
+[ "$HWMON" = "TRUE" ] \
+   && OUT_LINE1="$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" \
+   || OUT_LINE1="$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m"
+[ $(GetServiceStatus) = off ] && OUT_LINE1="${OUT_LINE1}\t*** service $SERVICE off ***"
+[ $(GetUptime) -lt $MIN_UPTIME ] && OUT_LINE1="${OUT_LINE1}\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 
 # Récupérer l'état des carte vidéo
 GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
 ProbeAllGPU > $GPUSTATUS
-echo -ne "\n$DATE ethminer-watchdog $HOSTNAME " && cat $GPUSTATUS
+OUT_LINE2="$DATE ethminer-watchdog $HOSTNAME "`cat $GPUSTATUS`
 rm -f $GPUSTATUS
 
+# Preparer le courriel email
+echo -ne "$0 $*\n\n" >> $EMAIL_BODY
+echo "$OUT_LINE1"    >> $EMAIL_BODY
+echo "$OUT_LINE2"    >> $EMAIL_BODY
 # Ajout de lignes blanches au corps du courriel
-echo >> $EMAIL_BODY
-echo >> $EMAIL_BODY
+echo                 >> $EMAIL_BODY
+echo                 >> $EMAIL_BODY
+
+echo "$OUT_LINE1"
+echo "$OUT_LINE2"
 
 # Ajouter la mention du mode DEBUG à l'état des GPU
 if [ "$DEBUG" = "TRUE" ]; then
