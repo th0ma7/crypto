@@ -380,8 +380,6 @@ MailAlert() {
 #    4) Redémarrage du système
 #
 SystemReboot() {
-   MailAlert "REBOOT #$REBOOT - $(GetServiceStatus) - $(GetTotalPowerUsage)"
-
    # Réinitialiser le compter de redémarrage de service
    # et ajuster le reste de l'état en vue du redémarrage système
    RESTART=0
@@ -390,13 +388,23 @@ SystemReboot() {
    LAST_FAILED_GPU=$FAILED_GPU
    WriteStatus
 
-   # Inscrire le redémarrage dans les journaux
-   echo -ne "$OUT_LINE1\t*** REBOOT ***\n"
-   echo "$OUT_LINE2"
-
-   # Nettoyer ce qui traine
-   rm -f $EMAIL_BODY
-   [ ! "$NOACT" = "TRUE" ] && sudo reboot
+   if [ "$NOACT" = "FALSE" ]; then
+      # Envoyer le courriel
+      MailAlert "REBOOT #$REBOOT - $(GetServiceStatus) - $(GetTotalPowerUsage)"
+      # Inscrire le redémarrage dans les journaux
+      echo -ne "$OUT_LINE1\t*** REBOOT ***\n"
+      echo "$OUT_LINE2"
+ 
+      # Nettoyer ce qui traine puis redémarrer
+      rm -f $EMAIL_BODY
+      [ ! "$NOACT" = "TRUE" ] && sudo reboot
+   else
+      # Envoyer le courriel
+      MailAlert "REBOOT #$REBOOT - $(GetServiceStatus) - $(GetTotalPowerUsage) (no-act)"
+      # Inscrire le redémarrage dans les journaux
+      echo -ne "$OUT_LINE1\t*** REBOOT (no-act) ***\n"
+      echo "$OUT_LINE2"
+   fi
 }
 
 #
@@ -414,19 +422,29 @@ SystemReboot() {
 # 
 ServiceRestart() {
    local status=""
-
-   # Inscrire le redémarrage dans les journaux
-   echo -ne "$OUT_LINE1\t*** RESTART $RESTART/$RESTART_MAX ***\n"
-   echo "$OUT_LINE2"
-
-   # Redémarrer le service
-   [ ! "$NOACT" = "TRUE" ] && sudo systemctl restart $SERVICE 1>/dev/null 2>&1
    
    RESTART+=1
    LAST_RESTART=$DATE
    LAST_FAILED_GPU=$FAILED_GPU
    WriteStatus
-   MailAlert "Service Restart #$RESTART"
+
+   if [ "$NOACT" = "FALSE" ]; then
+      # Envoyer le courriel
+      MailAlert "Service Restart $RESTART/$RESTART_MAX"
+      # Afficher la sortie
+      echo -ne "$OUT_LINE1\t*** RESTART $RESTART/$RESTART_MAX ***\n"
+      echo "$OUT_LINE2"
+
+      # Redémarrer le service
+      sudo systemctl restart $SERVICE 1>/dev/null 2>&1
+   else
+      # Envoyer le courriel
+      MailAlert "Service Restart $RESTART/$RESTART_MAX (no-act)"
+      # Afficher la sortie
+      echo -ne "$OUT_LINE1\t*** RESTART $RESTART/$RESTART_MAX (no-act) ***\n"
+      echo "$OUT_LINE2"
+   fi
+
 }
 
 #
