@@ -321,6 +321,7 @@ ProbeSoftFreeze() {
    local -i nb_accept=0
    
    #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
+   #echo $nb_accept 1>&2
    nb_accept=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep '**Accepted' | wc -l`
    echo $nb_accept
 }
@@ -389,6 +390,10 @@ SystemReboot() {
    LAST_FAILED_GPU=$FAILED_GPU
    WriteStatus
 
+   # Inscrire le redémarrage dans les journaux
+   echo -ne "$OUT_LINE1\t*** REBOOT ***\n"
+   echo "$OUT_LINE2"
+
    # Nettoyer ce qui traine
    rm -f $EMAIL_BODY
    [ ! "$NOACT" = "TRUE" ] && sudo reboot
@@ -409,6 +414,10 @@ SystemReboot() {
 # 
 ServiceRestart() {
    local status=""
+
+   # Inscrire le redémarrage dans les journaux
+   echo -ne "$OUT_LINE1\t*** RESTART $RESTART/$RESTART_MAX ***\n"
+   echo "$OUT_LINE2"
 
    # Redémarrer le service
    [ ! "$NOACT" = "TRUE" ] && sudo systemctl restart $SERVICE 1>/dev/null 2>&1
@@ -508,8 +517,6 @@ OUT_LINE2=""
 [ "$HWMON" = "TRUE" ] \
    && OUT_LINE1="$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m $(GetTotalPowerUsage)" \
    || OUT_LINE1="$DATE ethminer-watchdog $HOSTNAME $SERVICE/$(GetServiceStatus) $(GetTotalMhs)Mh/s $(ProbeSoftFreeze 60)**Accepted/h $(ProbeBadGPUresults 60)**Bad/h up/$(GetUptime)m"
-[ $(GetServiceStatus) = off ] && OUT_LINE1="${OUT_LINE1}\t*** service $SERVICE off ***"
-[ $(GetUptime) -lt $MIN_UPTIME ] && OUT_LINE1="${OUT_LINE1}\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***"
 
 # Récupérer l'état des carte vidéo
 GPUSTATUS=$(mktemp /tmp/ethminer-watchdog.XXXXXX)
@@ -525,23 +532,22 @@ echo "$OUT_LINE2"    >> $EMAIL_BODY
 echo                 >> $EMAIL_BODY
 echo                 >> $EMAIL_BODY
 
-echo "$OUT_LINE1"
-echo "$OUT_LINE2"
-
 # Ajouter la mention du mode DEBUG à l'état des GPU
 if [ "$DEBUG" = "TRUE" ]; then
    [ ! "$FAILED_GPU" ] && FAILED_GPU="DEBUG" || FAILED_GPU="$FAILED_GPU,DEBUG"
-fi
-# Ajouter la mention que le service est éteint (OFF)
-if [ $(GetServiceStatus) = off ]; then
-   [ ! "$FAILED_GPU" ] && FAILED_GPU="OFF" || FAILED_GPU="$FAILED_GPU,OFF"
 fi
 
 # Si le service est éteint alors ne rien faire
 # c'est possiblement normal pour une maintenance
 if [ $(GetServiceStatus) = off ]; then
+   # Ajouter la mention que le service est éteint (OFF)
+   [ ! "$FAILED_GPU" ] && FAILED_GPU="OFF" || FAILED_GPU="$FAILED_GPU,OFF"
+
    [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] = off" 1>&2
    rm -f $EMAIL_BODY
+
+   echo -ne "$OUT_LINE1\t*** service $SERVICE off ***\n"
+   echo "$OUT_LINE2"
    exit 0
 
 # Si cela fait moins de 10 minutes que le serveur
@@ -550,6 +556,9 @@ if [ $(GetServiceStatus) = off ]; then
 elif [ $(GetUptime) -lt $MIN_UPTIME ]; then
    [ "$DEBUG" = "TRUE" ] && echo "Uptime[$(GetUptime)] < $MIN_UPTIME" 1>&2
    rm -f $EMAIL_BODY
+
+   echo -ne "$OUT_LINE1\t*** uptime $(GetUptime)m < ${MIN_UPTIME}m ***\n"
+   echo "$OUT_LINE2"
    exit 0
 
 # Si on a une carte vidéo en erreur
@@ -568,7 +577,7 @@ elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
 
    # Si nous sommes ici alors on a tenté un SeviceRestart
    # Validons l'état actuel sinon reboot
-   sleep 10
+   [ ! "$NOACT" = "TRUE" ] && sleep 30
    [ ! $(GetServiceStatus) = on ] && SystemReboot
 
 # Si ethminer est en "soft freeze"
@@ -576,6 +585,7 @@ elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
 elif [ $(ProbeSoftFreeze) -eq 0 ]; then
    echo                                     >> $EMAIL_BODY
    echo "SOFT FREEZE TIMEOUT: $SOFTFREEZE"  >> $EMAIL_BODY
+   OUT_LINE1="${OUT_LINE1}\t*** SOFTFREEZE > ${SOFTFREEZE}m ***"
 
    # Retourner l'état "avant" du service dans le courriel
    echo                           >> $EMAIL_BODY
@@ -587,8 +597,13 @@ elif [ $(ProbeSoftFreeze) -eq 0 ]; then
 
    # Si nous sommes ici alors on a tenté un SeviceRestart
    # Validons l'état actuel sinon reboot
-   sleep 10
+   [ ! "$NOACT" = "TRUE" ] && sleep 30
    [ ! $(GetServiceStatus) = on ] && SystemReboot
+
+# Sinon tout est OK!
+else
+   echo "$OUT_LINE1"
+   echo "$OUT_LINE2"
 fi
 
 rm -f $EMAIL_BODY
