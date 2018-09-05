@@ -154,29 +154,37 @@ GetGPUTemp() {
 # GetGPUMhs()
 #
 # Entrée: no. d'identification de la carte vidéo ($1 -> $id)
-# Sortie: température en C de la carte vidéo
+# Sortie: performance en mh/s de la carte vidéo, -1.00 si valeur non-trouvée
 # Variable Globale: $SERVICE_LOG
 GetGPUMhs() {
    local id=$1
    local gpu_mhs=""
    local date_before=`date -d "5 minutes ago" "+%H:%M:"`
    
-   [ -s $SERVICE_LOG ] && gpu_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | awk '{print $1}'`
-   [ "$gpu_mhs" ] && echo "$gpu_mhs" || echo "0.00"
+   if [ "`grep $date_before $SERVICE_LOG`" ]; then
+      gpu_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk -F gpu?$id '{print $2}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | awk '{print $1}'`
+      [ "$gpu_mhs" ] && echo "$gpu_mhs" || echo "0.00"
+   else
+      echo "-1.00"
+   fi
 }
 
 #
 # GetTotalMhs()
 #
-# Entrée: no. d'identification de la carte vidéo ($1 -> $id)
-# Sortie: température en C de la carte vidéo
+# Entrée: aucun
+# Sortie: performance en mh/s de l'ensemble du système, -1.00 si valeur non-trouvée
 # Variable Globale: $SERVICE_LOG
 GetTotalMhs() {
    local total_mhs=""
    local date_before=`date -d "5 minutes ago" "+%H:%M:"`
    
-   [ -s $SERVICE_LOG ] && total_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk '{print $6}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'`
-   [ "$total_mhs" ] && echo "$total_mhs" || echo "0.00"
+   if [ "`grep $date_before $SERVICE_LOG`" ]; then
+      total_mhs=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep Speed | tail -1 | awk '{print $6}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'`
+      [ "$total_mhs" ] && echo "$total_mhs" || echo "0.00"
+   else
+      echo "-1.00"
+   fi
 }
 
 #
@@ -315,14 +323,19 @@ GetHardwareInfo() {
 #
 ProbeSoftFreeze() {
    local -i softfreeze_timeout=$SOFTFREEZE
-   [ $# -eq 1 ] && softfreeze_timeout=$1
+   local -i nb_accept=-1
+   local date_before=""
 
-   local date_before=`date -d "$softfreeze_timeout minutes ago" "+%H:%M:"`
-   local -i nb_accept=0
+   [ $# -eq 1 ] && softfreeze_timeout=$1
+   date_before=`date -d "$softfreeze_timeout minutes ago" "+%H:%M:"`
    
-   #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
-   #echo $nb_accept 1>&2
-   nb_accept=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep '**Accepted' | wc -l`
+   # Si la date de début n'est pas disponible
+   # dans les journaux (ex: logrotate, crash précédent)
+   if [ "`grep $date_before $SERVICE_LOG`" ]; then
+      #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep '**Accepted' | wc -l\n" 1>&2
+      #echo $nb_accept 1>&2
+      nb_accept=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep '**Accepted' | wc -l`
+   fi
    echo $nb_accept
 }
 
@@ -334,13 +347,18 @@ ProbeSoftFreeze() {
 #
 ProbeBadGPUresults() {
    local -i badresults_timeout=60
-   [ $# -eq 1 ] && badresults_timeout=$1
+   local -i nb_badresults=-1
+   local date_before=""
 
-   local date_before=`date -d "$badresults_timeout minutes ago" "+%H:%M:"`
-   local -i nb_badresults=0
+   [ $# -eq 1 ] && badresults_timeout=$1
+   date_before=`date -d "$badresults_timeout minutes ago" "+%H:%M:"`
    
-   #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l\n" 1>&2
-   nb_badresults=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l`
+   # Si la date de début n'est pas disponible
+   # dans les journaux (ex: logrotate, crash précédent)
+   if [ "`grep $date_before $SERVICE_LOG`" ]; then
+      #printf "sed -n '/$date_before/,\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l\n" 1>&2
+      nb_badresults=`eval sed -n '/$date_before/,\\$p' $SERVICE_LOG | grep 'GPU gave incorrect result!' | wc -l`
+   fi
    echo $nb_badresults
 }
 
