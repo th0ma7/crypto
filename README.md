@@ -294,6 +294,3 @@ jan 02 13:31:36 th0ma7-miner-01 sudo[1692]: pam_unix(sudo:session): session open
 jan 02 13:31:36 th0ma7-miner-01 sudo[1696]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/watch -t -n1 cat /sys/kernel/debug/dri/1/amdgpu_pm_info | awk /^GFX.Clocks/,/^GPU.Load.*/
 jan 02 13:31:36 th0ma7-miner-01 sudo[1696]: pam_unix(sudo:session): session opened for user root by root(uid=0)
 ```
-
-TODO:
-- Dynamic calculation of tmux screens depending of number of GPU detected as currently fixed to 6
