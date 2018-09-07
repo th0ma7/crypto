@@ -90,12 +90,14 @@ Currently only works with AMD video cards.
 
 Place the files as follow:
 - ethminer-watchdog.bash        -> `/usr/local/bin/ethminer-watchdog.bash`
+- ethminer-watchdog_default     -> `/etc/default/ethminer-watchdog`
 - ethminer-watchdog_cron.d      -> `/etc/cron.d/ethminer-watchdog`
 - ethminer-watchdog_logrotate.d -> `/etc/logrotate.d/ethminer-watchdog`
 
 Or using the following commands:
 ```
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog.bash --output-document=/usr/local/bin/ethminer-watchdog.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_default --output-document=/etc/default/ethminer-watchdog
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_cron.d --output-document=/etc/cron.d/ethminer-watchdog
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
 $ sudo chmod 755 /usr/local/bin/ethminer-watchdog.bash
