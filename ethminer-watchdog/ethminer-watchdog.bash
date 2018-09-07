@@ -4,7 +4,7 @@
 #
 # ethminer-watchdog.bash
 #
-# Écrit par: th0ma7@gmail.com
+# Écrit par: th0ma7 _at_ gmail.com
 #
 # Description:
 #   Capture de l'état des GPU AMD sur le sytème
@@ -18,9 +18,9 @@
 #
 ########################################################
 
-declare EMAIL=th0ma7@gmail.com
+declare EMAIL=<email>
 declare GPUWATCH_STATUS=$HOME/.ethminer-watchdog     # Fichier d'état avec le nombre de redémarrage du service
-declare HS110IP=192.168.80.21                        # Adresse IP de la prise électrique réseau
+declare HS110IP=<ip>                                 # Adresse IP de la prise électrique réseau
 #
 declare ROCMSMI=/opt/rocm/bin/rocm-smi               # https://github.com/RadeonOpenCompute/ROCm
 declare ATIFLASH=/usr/local/bin/atiflash             # https://bitcointalk.org/index.php?topic=1809527.0
@@ -45,6 +45,9 @@ declare -i REBOOT=0
 declare LAST_RESTART=""
 declare LAST_REBOOT=""
 declare LAST_FAILED_GPU=""
+
+# Default Settings - Edit /etc/default/ethminer-watchdog instead
+[ -r /etc/default/ethminer-watchdog ] && . /etc/default/ethminer-watchdog
 
 #
 # GetUptime()
