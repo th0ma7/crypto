@@ -9,4 +9,5 @@
 # tmux
 * Dynamic calculation of tmux screens depending of number of GPU detected as currently fixed to 6
 * Compatiblity with Ubuntu 18.04
+* nVidia compatibility
 * Rename to something more convenient
