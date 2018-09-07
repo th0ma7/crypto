@@ -102,6 +102,12 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watc
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
 $ sudo chmod 755 /usr/local/bin/ethminer-watchdog.bash
 ```
+Edit the needed parameters in `/etc/default/ethminer-watchdog` file:
+```
+EMAIL=<email>                                # Email where to send service restart & reboot info
+HS110IP=<ip>                                 # IP address of your TP-Link HS110 device, if any
+...
+```
 The script requires the following:
 - `rocm-smi` from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
 ```
