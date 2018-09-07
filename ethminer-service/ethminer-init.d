@@ -51,9 +51,7 @@ STRATUMURL="stratum+ssl"
 CLPARALLELHASH="2"
 
 # Default Settings - Edit /etc/default/ethminer instead
-if [ -r /etc/default/ethminer ]; then
-        . /etc/default/ethminer
-fi
+[ -r /etc/default/ethminer ] && . /etc/default/ethminer
 
 # Find ethminer version
 VERSION=`$DAEMON -V 2>&1 | grep -v ^$ | head -1 | awk '{print $NF}'`
