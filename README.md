@@ -67,7 +67,7 @@ $ sudo perl -p -i -e 's?DAEMON=.*?DAEMON="/opt/ethminer/bin/ethminer"?g' /etc/de
 $ sudo perl -p -i -e 's/WORKER=.*/WORKER="<myhostname>"/g' /etc/default/ethminer
 ```
 
-Add & enabled the service, reload `systemd` and start the service:
+Add & enable the service, reload `systemd` and start the service:
 ```
 $ sudo update-rc.d ethminer defaults
 $ sudo update-rc.d ethminer enable
