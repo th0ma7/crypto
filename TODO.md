@@ -3,7 +3,6 @@
 
 # Ethminer Watchdog
 * nVidia compatibility
-* Switch to enable|disable TP-Link HS110 Watt probing (--hs110)
 * Allow hard reboot using HS110 device?
 
 # tmux

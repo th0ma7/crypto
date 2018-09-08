@@ -4,7 +4,7 @@
 #
 # ethminer-watchdog.bash
 #
-# Écrit par: th0ma7 _at_ gmail.com
+# Écrit par: th0ma7@gmail.com
 #
 # Description:
 #   Capture de l'état des GPU AMD sur le sytème
@@ -18,13 +18,12 @@
 #
 ########################################################
 
-declare EMAIL=<email>
+declare EMAIL=""                                     # Email where to send service restart & reboot info
 declare GPUWATCH_STATUS=$HOME/.ethminer-watchdog     # Fichier d'état avec le nombre de redémarrage du service
-declare HS110IP=<ip>                                 # Adresse IP de la prise électrique réseau
 #
 declare ROCMSMI=/opt/rocm/bin/rocm-smi               # https://github.com/RadeonOpenCompute/ROCm
 declare ATIFLASH=/usr/local/bin/atiflash             # https://bitcointalk.org/index.php?topic=1809527.0
-declare HS110=/usr/local/bin/hs100.sh                # https://raw.githubusercontent.com/ggeorgovassilis/linuxscripts/master/tp-link-hs100-smartplug/hs100.sh
+declare HS110_SCRIPT=/usr/local/bin/hs100.sh         # https://raw.githubusercontent.com/ggeorgovassilis/linuxscripts/master/tp-link-hs100-smartplug/hs100.sh
 #
 declare SERVICE=ethminer
 declare SERVICE_LOG=/var/log/miners/ethminer.log     # Journaux du service ethminer
@@ -33,9 +32,11 @@ declare FAILED_GPU=""                                # Liste des GPU en défaut
 declare RESTART_MAX=3                                # Nombre de fois permis pour redémarrer le service, sinon reboot
 declare PROBE_MAX=3                                  # Nombre de fois que l'on valide l'état d'un GPU si pas égale à 100%
 #
-declare HWMON="FALSE"
-declare DEBUG="FALSE"
-declare NOACT="FALSE"
+declare HWMON="FALSE"                                # TRUE: Probe GPU Watt and Temp (e.g. --HWMON)
+declare DEBUG="FALSE"                                # TRUE: Addition output sent to >&2
+declare NOACT="FALSE"                                # TRUE: Do not take action, just simulate (e.g. --no-act|--noact)
+declare HS110="FALSE"                                # TRUE: Probe total Watt from TP-Link HS110 device
+declare HS110_IP=""                                  # Adresse IP de la prise électrique réseau
 #
 declare -i SOFTFREEZE=10                             # Durée maximale de détection d'un "soft-freeze"
 #
@@ -302,8 +303,26 @@ ProbeAllGPU() {
 # GetTotalPowerUsage()
 #
 GetTotalPowerUsage() {
-   out=`$HS110 $HS110IP 9999 emeter 2>/dev/null | jq -r '.emeter.get_realtime.power' | cut -f1 -d.`
-   echo $out"W"
+   if [ $HS110 = "TRUE" ]; then
+      local out=""
+
+      # Vérifier que le script est disponible et exécutatble
+      [ ! -x $HS110_SCRIPT ] && echo "ERROR: TP-Link HS110 script ($HS110_SCRIPT) not available!" 1>&2 && return
+
+      # Vérifier que l'adresse IP est valide
+      [[ ! $HS110_IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "ERROR: TP-Link HS110 IP ($HS110_IP) invalid format!" 1>&2 && return
+
+      # Vérifier que l'adresse du HS110 répond
+      ping -c 1 $HS110_IP 2>&1 >/dev/null
+      if [ ! $? -eq 0 ]; then
+         echo "ERROR: TP-Link HS110 IP ($HS110_IP) not reachable!" 1>&2 && return
+      else
+         out=`$HS110_SCRIPT $HS110_IP 9999 emeter 2>/dev/null | jq -r '.emeter.get_realtime.power' | cut -f1 -d.`
+         echo "${out}W"
+      fi
+   else
+      echo "do nothing" > /dev/null
+   fi
 }
 
 #
@@ -497,12 +516,13 @@ WriteStatus() {
 
 
 Help() {
-   echo "Monitoring actif d'état des GPU et du démon ethminer"
+   echo "Active monitoring of GPU & ethminer daemon"
    echo "$0"
-   printf '%20.20s : ' "--HWMON | -HWMON" && printf "Affiche la température des GPU\n"
-   printf '%20.20s : ' "--debug" && printf "Active le mode déverminage\n"
-   printf '%20.20s : ' "--noact | --no-act" && printf "N'active pas le redémarrage du service ou du système\n"
-   printf '%20.20s : ' "--help" && printf "Affiche cet aide\n"
+   printf '%20.20s : ' "--HWMON | -HWMON" && printf "Print GPU temperature & Watt\n"
+   printf '%20.20s : ' "--hs110" && printf "Probe for total rig Wattage from TP-Link HS-110 device\n"
+   printf '%20.20s : ' "--debug" && printf "Activate debug mode\n"
+   printf '%20.20s : ' "--noact | --no-act" && printf "Simulate action but do not actually restart services or reboot the rig\n"
+   printf '%20.20s : ' "--help" && printf "Print this help\n"
    
    exit 0
 }
@@ -526,6 +546,7 @@ for PARAM in $*
 do
    case $PARAM in
       -HWMON | --HWMON ) HWMON="TRUE";;
+               --hs110 ) HS110="TRUE";;
                --debug ) DEBUG="TRUE";;
     --no-act | --noact ) NOACT="TRUE";;
                 --help ) Help;;
@@ -533,10 +554,13 @@ do
 done
 
 if [ "$DEBUG" = "TRUE" ]; then
-   echo "DEBUG mode ON" 1>&2
-   echo "HWMON: $HWMON"
-   echo "DEBUG: $DEBUG"
-   echo "NOACT: $NOACT"
+   echo "DEBUG mode ON"       1>&2
+   echo "HWMON: $HWMON"       1>&2
+   echo "HS110: $HS110"       1>&2
+   echo "DEBUG: $DEBUG"       1>&2
+   echo "NOACT: $NOACT"       1>&2
+   echo                       1>&2
+   echo "HS110_IP: $HS110_IP" 1>&2
    #exit 0
 fi
 
@@ -602,7 +626,7 @@ elif [ $(GetUptime) -lt $MIN_UPTIME ]; then
 
 # Si on a une carte vidéo en erreur
 # ou si le service est en défaut alors
-elif [ "$FAILED_GPU" -o ! $(GetServiceStatus) = on ]; then
+elif [ "$FAILED_GPU" -a ! "$FAILED_GPU" = "DEBUG" -o ! $(GetServiceStatus) = on ]; then
    [ "$DEBUG" = "TRUE" ] && echo "ethminer[$(GetServiceStatus)] != on" 1>&2
    [ "$DEBUG" = "TRUE" ] && echo "FAILED_GPU[$FAILED_GPU]" 1>&2
 

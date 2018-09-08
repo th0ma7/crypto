@@ -88,6 +88,13 @@ $ sudo chown -R <myuser>:adm /var/log/miners
 Simple script to monitor the GPU of your mining rig along with status of `ethminer` service and restart or reboot if a GPU is hung.<br/>
 Currently only works with AMD video cards.
 
+Parameters:
+- `--HWMON` or `-HWMON`        -> Print GPU temperature & Watt
+- `--hs110`                    -> Probe for total rig Wattage from TP-Link HS-110 device
+- `--debug`                    -> Activate debug mode
+- `--noact` or `--no-act`      -> Simulate action but do not actually restart services or reboot the rig
+- `--help`                     -> Show help
+
 Place the files as follow:
 - ethminer-watchdog.bash        -> `/usr/local/bin/ethminer-watchdog.bash`
 - ethminer-watchdog_default     -> `/etc/default/ethminer-watchdog`
