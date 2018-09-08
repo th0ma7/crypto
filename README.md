@@ -117,7 +117,7 @@ HS110_IP=<IP>                                # IP address of your TP-Link HS110 
 
 Change the username `<USER>` to match your username `/etc/default/ethminer-watchdog`:
 ```
-$ sudo perl -p -i -e 's/ <USER> / MY_ACTUAL_USER /g' /etc/cron.d/ethminer-watchdog
+$ sudo perl -p -i -e 's/<USER>/MY_ACTUAL_USER/g' /etc/cron.d/ethminer-watchdog
 ```
 
 Change the IP `<IP>` to match your TP-Link HS-110 device, if any:
@@ -127,7 +127,7 @@ $ sudo perl -p -i -e 's/<IP>/MY_ACTUAL_IP/g' /etc/default/ethminer-watchdog
 
 Change the username `<USER>` in the crontab file `/etc/cron.d/ethminer-watchdog`:
 ```
-$ sudo perl -p -i -e 's/ <USER> / MY_ACTUAL_USER /g' /etc/cron.d/ethminer-watchdog
+$ sudo perl -p -i -e 's/<USER>/MY_ACTUAL_USER/g' /etc/cron.d/ethminer-watchdog
 ```
 
 Log files are located here: `/var/log/miners/ethminer-watchdog.log`<br/>
