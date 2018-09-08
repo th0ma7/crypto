@@ -109,12 +109,37 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watc
 $ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
 $ sudo chmod 755 /usr/local/bin/ethminer-watchdog.bash
 ```
-Edit the needed parameters in `/etc/default/ethminer-watchdog` file:
+
+Edit the needed parameters in `/etc/default/ethminer-watchdog` file (see below for quick one-liners):
 ```
-EMAIL=<email>                                # Email where to send service restart & reboot info
-HS110IP=<ip>                                 # IP address of your TP-Link HS110 device, if any
+EMAIL=<EMAIL>                                # Email where to send service restart & reboot info
+HS110_IP=<IP>                                # IP address of your TP-Link HS110 device, if any
 ...
+
+Change the username `<USER>` to match your username `/etc/default/ethminer-watchdog`:
 ```
+$ sudo perl -p -i -e 's/ <USER> / MY_ACTUAL_USER /g' /etc/cron.d/ethminer-watchdog
+```
+
+Change the IP `<IP>` to match your TP-Link HS-110 device, if any:
+```
+$ sudo perl -p -i -e 's/<IP>/MY_ACTUAL_IP/g' /etc/default/ethminer-watchdog
+```
+
+Change the username `<USER>` in the crontab file `/etc/cron.d/ethminer-watchdog`:
+```
+$ sudo perl -p -i -e 's/ <USER> / MY_ACTUAL_USER /g' /etc/cron.d/ethminer-watchdog
+```
+
+Log files are located here: `/var/log/miners/ethminer-watchdog.log`<br/>
+Make sure the log directory is read/write from the user account you use.
+```
+$ sudo mkdir /var/log/miners
+$ sudo touch /var/log/miners/ethminer-watchdog.log
+$ sudo chmod 664 /var/log/miners/ethminer-watchdog.log
+$ sudo chown -R <myuser>:adm /var/log/miners
+```
+
 The script requires the following:
 - `rocm-smi` from the rocm project (https://github.com/RadeonOpenCompute/ROCm)
 ```
@@ -134,26 +159,6 @@ $ sudo chmod 755 /usr/local/bin/hs100.sh
 $ sudo apt-get update
 $ sudo apt-get install jq
 ```
-
-Adjust the username used in `/etc/cron.d/ethminer-watchdog` file to match yours.
-```
-$ sudo perl -p -i -e 's/ th0ma7 / <myuser> /g' /etc/cron.d/ethminer-watchdog
-```
-
-Change the IP to match your TP-Link HS-110 device:
-```
-$ sudo perl -p -i -e 's/HS110IP=.*/HS110IP=<myip>/g' /usr/local/bin/ethminer-watchdog.bash
-```
-
-Log files are located here: `/var/log/miners/ethminer-watchdog.log`<br/>
-Make sure the log directory is read/write from the user account you use.
-```
-$ sudo mkdir /var/log/miners
-$ sudo touch /var/log/miners/ethminer-watchdog.log
-$ sudo chmod 664 /var/log/miners/ethminer-watchdog.log
-$ sudo chown -R <myuser>:adm /var/log/miners
-```
-
 Install `mutt` client:
 ```
 $ sudo apt-get install mutt
