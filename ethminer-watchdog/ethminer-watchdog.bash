@@ -475,8 +475,21 @@ ServiceRestart() {
       echo -ne "$OUT_LINE1\t*** RESTART $RESTART/$RESTART_MAX ***\n"
       echo "$OUT_LINE2"
 
-      # Redémarrer le service
-      sudo systemctl restart $SERVICE 1>/dev/null 2>&1
+      # Éteindre le service
+      sudo systemctl stop $SERVICE 1>/dev/null 2>&1
+      sleep 10
+      [ "`pidof ethminer`" ] && sudo kill -9 `pidof ethminer` && sleep 5
+
+      # Retirer et réinsérer le module amdkfd du système
+      #sudo rmmod amdkfd && sleep 5 || return
+      sudo modprobe -rf amdkfd && sleep 5 || return
+      # DEBUG
+      #sudo lsmod | grep amd
+
+      sudo modprobe amdkfd && sleep 5 || return
+
+      # Démarrer le service
+      sudo systemctl start $SERVICE 1>/dev/null 2>&1 && sleep 5 || return
    else
       # Envoyer le courriel
       MailAlert "Service Restart $RESTART/$RESTART_MAX (no-act)"
@@ -640,8 +653,11 @@ elif [ "$FAILED_GPU" -a ! "$FAILED_GPU" = "DEBUG" -o ! $(GetServiceStatus) = on 
 
    # Si nous sommes ici alors on a tenté un SeviceRestart
    # Validons l'état actuel sinon reboot
-   [ ! "$NOACT" = "TRUE" ] && sleep 30
    [ ! $(GetServiceStatus) = on ] && SystemReboot
+
+   ### DEBUG
+   #sudo systemctl status $SERVICE
+   #echo "Pre-SystemReboot:GetServiceStatus: [$(GetServiceStatus)]"
 
 # Si ethminer est en "soft freeze"
 # ref: https://github.com/ethereum-mining/ethminer/issues/1531
@@ -649,6 +665,9 @@ elif [ $(ProbeSoftFreeze) -eq 0 ]; then
    echo                                     >> $EMAIL_BODY
    echo "SOFT FREEZE TIMEOUT: $SOFTFREEZE"  >> $EMAIL_BODY
    OUT_LINE1="${OUT_LINE1}\t*** SOFTFREEZE > ${SOFTFREEZE}m ***"
+
+   # Ajuster $FAILED_GPU pour la sortie courriel
+   [ ! "$FAILED_GPU" ] && FAILED_GPU="SoftFreeze" || FAILED_GPU="$FAILED_GPU,SoftFreeze"
 
    # Retourner l'état "avant" du service dans le courriel
    echo                           >> $EMAIL_BODY
@@ -660,8 +679,11 @@ elif [ $(ProbeSoftFreeze) -eq 0 ]; then
 
    # Si nous sommes ici alors on a tenté un SeviceRestart
    # Validons l'état actuel sinon reboot
-   [ ! "$NOACT" = "TRUE" ] && sleep 30
    [ ! $(GetServiceStatus) = on ] && SystemReboot
+
+   ### DEBUG
+   #sudo systemctl status $SERVICE
+   #echo "Pre-SystemReboot:GetServiceStatus: [$(GetServiceStatus)]"
 
 # Sinon tout est OK!
 else
