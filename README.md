@@ -1,4 +1,4 @@
-# th0ma7
+# crypto - th0ma7
 Various derived &amp; home-made shell scripts for `ethminer` Mining
 
 Donnations welcomed at: `0x522d164549E68681dfaC850A2cabdb95686C1fEC`
@@ -49,9 +49,9 @@ Place the files as follow:
 
 Or using the following commands:
 ```
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-init.d --output-document=/etc/init.d/ethminer
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-default --output-document=/etc/default/ethminer
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer/ethminer-logrotate.d --output-document=/etc/logrotate.d/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-init.d --output-document=/etc/init.d/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-default --output-document=/etc/default/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-logrotate.d --output-document=/etc/logrotate.d/ethminer
 $ sudo chmod 755 /etc/init.d/ethminer
 ```
 
@@ -102,10 +102,10 @@ Place the files as follow:
 
 Or using the following commands:
 ```
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog.bash --output-document=/usr/local/bin/ethminer-watchdog.bash
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_default --output-document=/etc/default/ethminer-watchdog
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_cron.d --output-document=/etc/cron.d/ethminer-watchdog
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-watchdog/ethminer-watchdog.bash --output-document=/usr/local/bin/ethminer-watchdog.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-watchdog/ethminer-watchdog_default --output-document=/etc/default/ethminer-watchdog
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-watchdog/ethminer-watchdog_cron.d --output-document=/etc/cron.d/ethminer-watchdog
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-watchdog/ethminer-watchdog_logrotate.d --output-document=/etc/logrotate.d/ethminer-watchdog
 $ sudo chmod 755 /usr/local/bin/ethminer-watchdog.bash
 ```
 
@@ -238,7 +238,7 @@ Place the files as follow:
 
 Or using the following commands:
 ```
-$ sudo wget https://raw.githubusercontent.com/th0ma7/th0ma7/master/tmux.bash --output-document=/usr/local/bin/tmux.bash
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/tmux.bash --output-document=/usr/local/bin/tmux.bash
 $ sudo chmod 755 /usr/local/bin/tmux.bash
 ```
 
