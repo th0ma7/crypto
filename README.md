@@ -49,9 +49,9 @@ Place the files as follow:
 
 Or using the following commands:
 ```
-$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-init.d --output-document=/etc/init.d/ethminer
-$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-default --output-document=/etc/default/ethminer
-$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer/ethminer-logrotate.d --output-document=/etc/logrotate.d/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-service/ethminer-init.d --output-document=/etc/init.d/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-service/ethminer-default --output-document=/etc/default/ethminer
+$ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-service/ethminer-logrotate.d --output-document=/etc/logrotate.d/ethminer
 $ sudo chmod 755 /etc/init.d/ethminer
 ```
 
