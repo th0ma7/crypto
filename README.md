@@ -55,6 +55,15 @@ $ sudo wget https://raw.githubusercontent.com/th0ma7/crypto/master/ethminer-serv
 $ sudo chmod 755 /etc/init.d/ethminer
 ```
 
+Log files are located under `/var/log/miners/ethminer.log`<br/>
+Make sure the log directory is read/write for the user account you use and create initial log file with proper permissions (see Mining Scripts Preamble section).
+```
+$ sudo mkdir /var/log/miners
+$ sudo touch /var/log/miners/ethminer.log
+$ sudo chmod 664 /var/log/miners/ethminer.log
+$ sudo chown -R <myuser>:adm /var/log/miners
+```
+
 Adjust the following in `/etc/default/ethminer` (and also look into other possible details):
 - `WALLET` -> Your ethereum wallet
 - `RUNAS`  -> User account where the daemon run as (never use `root`!)
@@ -72,16 +81,10 @@ Add & enable the service, reload `systemd` and start the service:
 $ sudo update-rc.d ethminer defaults
 $ sudo update-rc.d ethminer enable
 $ sudo systemctl daemon-reload
+```
+**IMPORTANT:**  Make sure log ethminer.log has propermissions as otherwise it will fail to start! (see above info)
+```
 $ sudo systemctl restart ethminer
-```
-
-Log files are located under `/var/log/miners/ethminer.log`<br/>
-Make sure the log directory is read/write for the user account you use and create initial log file with proper permissions (see Mining Scripts Preamble section).
-```
-$ sudo mkdir /var/log/miners
-$ sudo touch /var/log/miners/ethminer.log
-$ sudo chmod 664 /var/log/miners/ethminer.log
-$ sudo chown -R <myuser>:adm /var/log/miners
 ```
 
 # Ethminer Watchdog
