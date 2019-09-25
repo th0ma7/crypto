@@ -147,7 +147,10 @@ $ echo "deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ bionic main" | 
 $ sudo apt update
 $ sudo apt install rocm-smi
 ```
-- `atiflash` to get further info of cards (https://drive.google.com/file/d/0B60njIARS0fLcEtsNXFfeTZ5LXc/view).  Can probably be found elsewhere, just place it under `/usr/local/bin`
+- `atiflash` to get further info of cards (https://drive.google.com/file/d/0B60njIARS0fLcEtsNXFfeTZ5LXc/view).  Can probably be found elsewhere, just place it under `/usr/local/bin`.  Once downloaded extract as `/usr/local/bin/atiflash`
+```
+$ sudo tar -xvf atiflash_linux.tar.xz -C /usr/local/bin
+```
 - TP-Link `hs100.sh` helper script for total Watt monitoring using HS-110 plugs (https://github.com/ggeorgovassilis/linuxscripts)
 ```
 $ sudo wget https://raw.githubusercontent.com/ggeorgovassilis/linuxscripts/master/tp-link-hs100-smartplug/hs100.sh  --output-document=/usr/local/bin/hs100.sh
