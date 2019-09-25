@@ -7,8 +7,8 @@
 #
 ########################################################
 #
-EMAIL="<EMAIL>"                      # Email where to send service restart & reboot info
-HS110_IP="<IP>"                      # IP address of your TP-Link HS110 device, if any
+EMAIL="<EMAIL>"                               # Email where to send service restart & reboot info
+HS110_IP="<IP>"                               # IP address of your TP-Link HS110 device, if any
 #
 # External Tools
 #ROCMSMI=/opt/rocm/bin/rocm-smi               # https://github.com/RadeonOpenCompute/ROCm
@@ -18,10 +18,11 @@ HS110_IP="<IP>"                      # IP address of your TP-Link HS110 device, 
 #SERVICE=ethminer                             # systemd service name
 #SERVICE_LOG=/var/log/miners/ethminer.log     # Log location of ethminer
 #
-#SOFTFREEZE=10                                # Max allowed time before action when detecting "soft-freeze"
-#MIN_UPTIME=10                                # Grace period post-reboot
-#RESTART_MAX=3                                # Nb. of service restart prior to reboot
+#SOFTFREEZE=10                                # Max allowed time before action when detecting "soft-freeze"     - DEFAULT: 10
+#MIN_UPTIME=10                                # Grace period in minutes post-reboot                             - DEFAULT: 10
+#RESTART_MAX=3                                # Nb. of service restart prior to reboot                          - DEFAULT: 3
 #
-#HWMON="TRUE"                                  # TRUE: Probe GPU Watt and Temp (e.g. --HWMON)
-#HS110="TRUE"                                  # TRUE: Probe total Watt from TP-Link HS110 device
-#NOACT="FALSE"                                # TRUE: Do not take action, just simulate (e.g. --no-act|--noact)
+#HWMON="TRUE"                                 # TRUE: Probe GPU Watt and Temp (e.g. --HWMON)                    - DEFAULT: FALSE
+#HS110="TRUE"                                 # TRUE: Probe total Watt from TP-Link HS110 device                - DEFAULT: FALSE
+NOACT="TRUE"                                  # TRUE: Do not take action, just simulate (e.g. --no-act|--noact) - DEFAULT: FALSE
+#DEBUG="TRUE"                                 # TRUE: Be verbose                                                - DEFAULT: FALSE
