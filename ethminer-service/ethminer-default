@@ -11,6 +11,8 @@ WORKER="th0ma7-miner-01"
 
 # -U (nVidia Cuda) or -G (OpenCL) or -X (mixed Cuda/OpenCL cards)
 GPU="-G"
+DEVICES="0 1 2 3 4 5"
+#DEVICES="0 1 3 4 5"
 # values: pool, proxy, solo
 MINING_MODE="pool"
 # ETHMINING - ETH

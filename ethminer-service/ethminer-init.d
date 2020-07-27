@@ -76,6 +76,10 @@ else
   DAEMON_OPTS="$GPU $EXTRA_PARAM --farm-recheck $FARM_RECHECK -SP $STRATUMPROTO -F $SERVERS"
 fi
 
+if [ "$DEVICES" ]; then
+  DAEMON_OPTS=${DAEMON_OPTS}" --opencl-devices $DEVICES"
+fi
+
 DESC="ethminer start-stop-daemon init script"
 NAME=ethminer
 PIDFILE=/var/run/$NAME.pid
